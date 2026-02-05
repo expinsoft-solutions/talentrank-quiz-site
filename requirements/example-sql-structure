@@ -1,0 +1,51 @@
+
+CREATE TABLE `assessments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `createdAt` timestamp(6) NOT NULL DEFAULT current_timestamp(6),
+  `questionnaire` text NOT NULL,
+  `version` varchar(36) NOT NULL,
+  `language_key` varchar(5) NOT NULL DEFAULT 'en',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `IDX_97d07ae910225ae4ba7ad50f84` (`version`)
+) ENGINE=InnoDB AUTO_INCREMENT=287 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `first_name` varchar(255) NOT NULL,
+  `last_name` varchar(255) NOT NULL,
+  `company` varchar(255) NOT NULL,
+  `job_title` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` varchar(255) NOT NULL DEFAULT 'user',
+  `age_range` varchar(255) NOT NULL,
+  `industry` varchar(255) NOT NULL,
+  `gender` varchar(255) NOT NULL,
+  `country` varchar(255) NOT NULL,
+  `is_student` tinyint(4) NOT NULL,
+  `subscribes_to` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`subscribes_to`)),
+  `otp_verified` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `IDX_97672ac88f789774dd47f7c8be` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `user_assessments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `assessment_id` int(11) DEFAULT NULL,
+  `answers` varchar(255) NOT NULL,
+  `scores_in_percentage` varchar(255) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `personality_id` int(11) DEFAULT NULL,
+  `certificate_status` enum('not_sent','sending','sent') DEFAULT 'not_sent',
+  `version_name` varchar(40) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK_76eac82f229fc48a681042da844` (`user_id`),
+  KEY `FK_b72ee00c09507c6e54886414a61` (`assessment_id`),
+  KEY `REL_72af7915380d03f02b082a44c9` (`personality_id`) USING BTREE,
+  KEY `userassessments_campgain` (`version_name`),
+  CONSTRAINT `FK_72af7915380d03f02b082a44c99` FOREIGN KEY (`personality_id`) REFERENCES `personalities` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_76eac82f229fc48a681042da844` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_b72ee00c09507c6e54886414a61` FOREIGN KEY (`assessment_id`) REFERENCES `assessments` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `userassessments_campgain` FOREIGN KEY (`version_name`) REFERENCES `campaign` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=772 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

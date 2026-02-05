@@ -1,0 +1,1140 @@
+[
+    {
+        "title": "Visionary Thinking",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I can easily picture the future impact of current actions.",
+                "negative": false
+            },
+            {
+                "type": "likert",
+                "statement": "Long-term planning is more challenging to me than dealing with immediate issues.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "I’m always thinking about the next big thing."
+            },
+            {
+                "type": "likert",
+                "statement": "I find it hard to think about future possibilities.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "Imagining future scenarios helps guide my decisions in the present."
+            },
+            {
+                "type": "binary",
+                "statement": "A trend emerges that could impact your industry.",
+                "options": [
+                    "Anticipate changes and prepare.",
+                    "Focus on current operations only."
+                ],
+                "negative": false
+            },
+            {
+                "type": "binary",
+                "statement": "You're asked to envision the company's future.",
+                "options": [
+                    "Present a detailed vision plan.",
+                    "Leave future considerations to senior management."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "A new technology promises future benefits.",
+                "options": [
+                    "Integrate it into long-term strategies.",
+                    "Wait for proven results before adopting."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "In setting personal goals, I tend to:",
+                "options": [
+                    "Focus on short-term, achievable goals.",
+                    "Balance short-term and long-term goals.",
+                    "Envision and pursue bold, long-term goals.",
+                    "Create transformative visions for the future."
+                ],
+                "negative": false
+            },
+            {
+                "type": "mcq",
+                "statement": "My strategic planning style involves:",
+                "options": [
+                    "Efficiently managing current resources.",
+                    "Balancing present needs with future opportunities.",
+                    "Anticipating future trends and preparing for them.",
+                    "Developing groundbreaking strategies for long-term success."
+                ],
+                "negative": false
+            }
+        ]
+    },
+    {
+        "title": "Strategic Problem Solving",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I approach problems by first considering the ultimate goal."
+            },
+            {
+                "type": "likert",
+                "statement": "Jumping into action without a plan is often my method.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "I prefer to consider all possible outcomes before making a decision."
+            },
+            {
+                "type": "likert",
+                "statement": "I find strategic planning to be a tedious process.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "Breaking down a problem into smaller parts is my usual strategy."
+            },
+            {
+                "type": "binary",
+                "statement": "You face a complex business challenge.",
+                "options": [
+                    "Break it into manageable parts.",
+                    "Address it as a whole for efficiency."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "A competitor's strategy changes the market.",
+                "options": [
+                    "Realign your strategy to stay competitive.",
+                    "Continue with your existing approach."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You're tasked with reducing costs.",
+                "options": [
+                    "Analyze and strategically cut expenses.",
+                    "Implement across-the-board cuts."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "When addressing strategic challenges, I:",
+                "options": [
+                    "Use solutions that have worked in the past.",
+                    "Make incremental changes after analysis.",
+                    "Develop comprehensive plans considering all factors.",
+                    "Innovate entirely new strategies from scratch."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "As a leader, I typically:",
+                "options": [
+                    "Follow established strategies and practices.",
+                    "Encourage team input for improvements.",
+                    "Lead strategic discussions and plan methodically.",
+                    "Inspire revolutionary strategic changes."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Adaptability",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I adapt quickly to new environments and situations."
+            },
+            {
+                "type": "likert",
+                "statement": "Changes in plans upset me.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "I find it easy to adjust my methods based on new information."
+            },
+            {
+                "type": "likert",
+                "statement": "I struggle to find my footing when the context changes rapidly.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "Being flexible in my plans and expectations comes naturally to me."
+            },
+            {
+                "type": "binary",
+                "statement": "A sudden change in project scope occurs.",
+                "options": [
+                    "Adapt your approach to meet new requirements.",
+                    "Insist on sticking to the original plan."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You're relocated to a new office environment.",
+                "options": [
+                    "Embrace the change and adjust quickly.",
+                    "Find it challenging to settle in the new environment."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You are asked to use unfamiliar software.",
+                "options": [
+                    "Learn it quickly to improve efficiency.",
+                    "Request to continue using familiar tools."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "When plans change unexpectedly, I:",
+                "options": [
+                    "Feel uneasy and prefer sticking to the original plan.",
+                    "Take some time to adjust, but eventually adapt.",
+                    "Adapt quickly and find ways to contribute effectively.",
+                    "Embrace the change and help lead the new direction."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "In response to sudden changes at work, I:",
+                "options": [
+                    "Attempt to maintain my usual routines.",
+                    "Gradually adjust to the new environment.",
+                    "Embrace the change and look for new opportunities.",
+                    "Instantly adapt and encourage others to do the same."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Problem-Solving",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I enjoy solving complex problems more than simple ones."
+            },
+            {
+                "type": "likert",
+                "statement": "When faced with a challenge, I tend to come up with multiple solutions."
+            },
+            {
+                "type": "likert",
+                "statement": "I get overwhelmed easily by complicated problems.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "Creative problem-solving energizes me."
+            },
+            {
+                "type": "likert",
+                "statement": "I often solve problems by looking for patterns that others don’t see."
+            },
+            {
+                "type": "binary",
+                "statement": "A project issue arises unexpectedly.",
+                "options": [
+                    "Analyze and generate multiple solutions.",
+                    "Wait for guidance from superiors."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "A client presents a complex challenge.",
+                "options": [
+                    "Dive in and brainstorm solutions.",
+                    "Request more time to think it over."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You're faced with a problem outside your expertise.",
+                "options": [
+                    "Research and tackle it head-on.",
+                    "Delegate it to someone more experienced."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "When faced with complex problems, I:",
+                "options": [
+                    "Use proven solutions that have worked in the past.",
+                    "Break the problem down into smaller parts to solve.",
+                    "Employ a variety of strategies to address different aspects.",
+                    "Focus on innovative solutions to tackle the most difficult parts."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "In work challenges, my approach is to:",
+                "options": [
+                    "Stick to standard procedures and protocols.",
+                    "Consult with colleagues to get different perspectives.",
+                    "Experiment with different methods to find effective solutions.",
+                    "Create unique and tailored solutions."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Collaborative Creativity",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I generate better ideas when I collaborate with others."
+            },
+            {
+                "type": "likert",
+                "statement": "Group settings often stifle my creativity.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "I value the input of others when developing creative solutions."
+            },
+            {
+                "type": "likert",
+                "statement": "I find my creativity is diminished when I am forced to work in teams.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "Brainstorming sessions with colleagues often lead to my best ideas."
+            },
+            {
+                "type": "binary",
+                "statement": "Your team is tasked with brainstorming a new product idea.",
+                "options": [
+                    "Lead the session to foster creativity.",
+                    "Work independently for better focus."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "A colleague suggests a creative collaboration.",
+                "options": [
+                    "Accept and contribute your ideas.",
+                    "Decline, preferring to work alone."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You're part of a team with diverse skills.",
+                "options": [
+                    "Utilize everyone's strengths for creativity.",
+                    "Focus on individual contributions to avoid conflict."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "In group projects, I tend to:",
+                "options": [
+                    "Work independently and contribute later.",
+                    "Listen to others and build on their ideas.",
+                    "Actively participate and encourage others.",
+                    "Lead the group towards collective creativity."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "During brainstorming sessions, I usually:",
+                "options": [
+                    "Offer input when asked but focus on my own ideas.",
+                    "Support others’ ideas and add my own thoughts.",
+                    "Contribute actively and synthesize group ideas.",
+                    "Facilitate the session to maximize creativity."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Curiosity",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I am curious about things even if they are not immediately relevant to my goals."
+            },
+            {
+                "type": "likert",
+                "statement": "I rarely question how things work.",
+                "reverse": true
+            },
+            {
+                "type": "likert",
+                "statement": "I often find myself asking, 'What if...?"
+            },
+            {
+                "type": "likert",
+                "statement": "My curiosity drives me to explore unconventional paths."
+            },
+            {
+                "type": "likert",
+                "statement": "I prefer to stick to what I know.",
+                "reverse": true
+            },
+            {
+                "type": "binary",
+                "statement": "You discover a new, unrelated topic.",
+                "options": [
+                    "Dive in to learn more.",
+                    "Stick to familiar subjects."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "A colleague presents a novel idea.",
+                "options": [
+                    "Explore its potential enthusiastically.",
+                    "Focus on existing projects."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You find a book on an unfamiliar subject.",
+                "options": [
+                    "Read it to satisfy your curiosity.",
+                    "Choose a book in your comfort zone."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "When encountering something new, I:",
+                "options": [
+                    "Show mild interest before moving on.",
+                    "Ask a few questions to understand it.",
+                    "Dive deep to learn more about it.",
+                    "Thoroughly explore to satisfy my curiosity."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "In learning about new subjects, I:",
+                "options": [
+                    "Learn only the basics needed.",
+                    "Gain a moderate understanding.",
+                    "Explore various resources to deepen knowledge.",
+                    "Investigate thoroughly from every available angle."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Persistence",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I persist in my efforts even when faced with significant obstacles."
+            },
+            {
+                "type": "likert",
+                "statement": "Giving up on a difficult task is easier than facing potential failure.",
+                "reverse": true
+            },
+            {
+                "type": "likert",
+                "statement": "I am relentless in pursuing my goals, regardless of the challenges."
+            },
+            {
+                "type": "likert",
+                "statement": "I tend to lose interest in tasks if I don't see immediate results.",
+                "reverse": true
+            },
+            {
+                "type": "likert",
+                "statement": "Challenges and setbacks motivate me to try even harder."
+            },
+            {
+                "type": "binary",
+                "statement": "A project you're passionate about hits a major obstacle.",
+                "options": [
+                    "Persevere and find a way around it.",
+                    "Consider abandoning it for an easier task."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "Your team faces repeated failures.",
+                "options": [
+                    "Encourage persistence and re-evaluate strategies.",
+                    "Shift focus to more manageable tasks."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "A long-term goal seems increasingly difficult.",
+                "options": [
+                    "Stay committed and adjust tactics.",
+                    "Reconsider if the goal is worth the effort."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "When projects get tough, I:",
+                "options": [
+                    "Consider moving on to something else.",
+                    "Seek assistance to overcome the challenges.",
+                    "Work steadily until completion.",
+                    "Persist with determination no matter the obstacles."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "After repeated setbacks, I:",
+                "options": [
+                    "Feel discouraged and try something different.",
+                    "Reassess my approach and try again.",
+                    "Keep trying different methods until I succeed.",
+                    "Persist tenaciously until I achieve my goals."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Experimentation",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I am keen to try out new methods, even if they might not work."
+            },
+            {
+                "type": "likert",
+                "statement": "I learn best by experimenting and seeing what happens."
+            },
+            {
+                "type": "likert",
+                "statement": "Taking a trial-and-error approach feels natural to me."
+            },
+            {
+                "type": "likert",
+                "statement": "I often suggest trying unconventional ideas to solve problems."
+            },
+            {
+                "type": "likert",
+                "statement": "Experimenting with new ideas is a regular part of my routine."
+            },
+            {
+                "type": "binary",
+                "statement": "You have an innovative idea that you believe will benefit the company.",
+                "options": [
+                    "Present a detailed plan and potential outcomes to senior management.",
+                    "Start a small-scale pilot within your team to demonstrate its effectiveness."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "The company is considering a digital transformation initiative to stay competitive.",
+                "options": [
+                    "Start with customer-facing technologies to improve the customer experience.",
+                    "Focus on internal processes first to improve efficiency and productivity."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You're considering launching a side project that could potentially benefit your main business.",
+                "options": [
+                    "Launch it quietly within a small, controlled segment to gauge interest.",
+                    "Pitch the project to the leadership team for resources to launch it officially."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "When considering a new idea, I:",
+                "options": [
+                    "Think about it, but don’t act on it.",
+                    "Discuss it with others but remain cautious.",
+                    "Test it with small experiments.",
+                    "Dive into experimenting with enthusiasm."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "My work style involves:",
+                "options": [
+                    "Sticking to proven methods.",
+                    "Occasionally trying new things.",
+                    "Regularly experimenting and adjusting.",
+                    "Constantly innovating with adventurous experiments."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Risk-Taking",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I thrive in situations that involve significant risk."
+            },
+            {
+                "type": "likert",
+                "statement": "I often avoid taking risks.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "Uncertainty in outcomes does not deter me from making decisions."
+            },
+            {
+                "type": "likert",
+                "statement": "I usually opt for the safe route when confronted with a decision.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "Taking risks has often led me to new and unexpected opportunities."
+            },
+            {
+                "type": "binary",
+                "statement": "You're considering investing in a high-risk, high-reward opportunity.",
+                "options": [
+                    "Invest and hope for the best.",
+                    "Choose a safer investment with lower returns."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You have an idea that could revolutionize your industry but risks failure.",
+                "options": [
+                    "Pursue it to potentially change the game.",
+                    "Play it safe and improve existing processes."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You're offered a chance to lead a risky project.",
+                "options": [
+                    "Take it to challenge yourself.",
+                    "Decline and choose a more stable project."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "In business decisions, I am inclined to:",
+                "options": [
+                    "Avoid risks and prioritize stability.",
+                    "Carefully evaluate risks before proceeding.",
+                    "Take calculated risks when opportunities arise.",
+                    "Embrace significant risks to achieve high rewards."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "When investing, I generally:",
+                "options": [
+                    "Prefer low-risk investments for steady growth.",
+                    "Mix low and moderate-risk investments.",
+                    "Opt for moderate-risk investments with good potential returns.",
+                    "Choose high-risk investments for the chance of high returns."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Innovation Drive",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I am always on the lookout for ways to innovate in my work."
+            },
+            {
+                "type": "likert",
+                "statement": "I prefer maintaining the status quo to making changes.",
+                "reverse": true
+            },
+            {
+                "type": "likert",
+                "statement": "The desire to innovate is a key driver of my professional activities."
+            },
+            {
+                "type": "likert",
+                "statement": "I often introduce new and pioneering ideas to my team."
+            },
+            {
+                "type": "likert",
+                "statement": "Sticking to tried and tested methods is usually my preference.",
+                "reverse": true
+            },
+            {
+                "type": "binary",
+                "statement": "You have a new idea for process improvement.",
+                "options": [
+                    "Implement it to drive innovation.",
+                    "Wait for approval to ensure it's feasible."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "A competitor launches an innovative product.",
+                "options": [
+                    "Develop a unique response to maintain relevance.",
+                    "Focus on improving current offerings."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "Your manager encourages innovative thinking.",
+                "options": [
+                    "Propose a groundbreaking idea.",
+                    "Suggest incremental improvements."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "When tasked with improving a process, I:",
+                "options": [
+                    "Make minimal adjustments to improve efficiency.",
+                    "Look for moderate, time-tested improvements.",
+                    "Seek creative ways to significantly enhance the process.",
+                    "Innovate entirely new systems for process overhaul."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "In product development, my approach is to:",
+                "options": [
+                    "Maintain traditional methods with slight upgrades.",
+                    "Implement known enhancements for better performance.",
+                    "Integrate new technologies and ideas for innovation.",
+                    "Pioneer revolutionary products that redefine the market."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Integrative Thinking",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I combine information from different sources to solve problems."
+            },
+            {
+                "type": "likert",
+                "statement": "Integrating diverse viewpoints is crucial in my decision-making."
+            },
+            {
+                "type": "likert",
+                "statement": "I think about problems holistically, considering all aspects."
+            },
+            {
+                "type": "likert",
+                "statement": "I am skilled at synthesizing information to form solutions."
+            },
+            {
+                "type": "likert",
+                "statement": "I value a balanced approach to complex issues."
+            },
+            {
+                "type": "binary",
+                "statement": "There's an opportunity to adopt new technology that could improve efficiency but requires significant change management. What is your approach?",
+                "options": [
+                    "Conduct a thorough cost-benefit analysis before making any decisions.",
+                    "Proceed with a trial phase to test the technology’s impact on operations."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "Rapid industry changes have highlighted a skills gap in your workforce. How do you address it?",
+                "options": [
+                    "Develop a comprehensive in-house training program tailored to identify skill gaps.",
+                    "Partner with online education platforms to provide employees with access to relevant courses."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "Your sector is experiencing rapid technological advances, and you want to stay ahead. What is your strategy?",
+                "options": [
+                    "Invest in a dedicated R&D team to focus on future technologies.",
+                    "Partner with technology universities and institutions for insights and talent."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "When confronted with conflicting ideas, I:",
+                "options": [
+                    "Choose the simplest solution.",
+                    "Weigh the pros and cons of each.",
+                    "Synthesize elements into a new solution.",
+                    "Create comprehensive solutions integrating all aspects."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "My decision-making process involves:",
+                "options": [
+                    "Following established guidelines.",
+                    "Considering multiple viewpoints.",
+                    "Blending diverse ideas into cohesive plans.",
+                    "Integrating various perspectives for innovative decisions."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Innovative Resilience",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I view setbacks as opportunities to learn and grow."
+            },
+            {
+                "type": "likert",
+                "statement": "I remain focused on my long-term goals, even when facing significant challenges."
+            },
+            {
+                "type": "likert",
+                "statement": "I am able to transform obstacles into stepping stones for future success."
+            },
+            {
+                "type": "likert",
+                "statement": "I am inspired by change and use it as a catalyst for innovation."
+            },
+            {
+                "type": "likert",
+                "statement": "I often find myself thinking strategically about how current challenges can shape future opportunities."
+            },
+            {
+                "type": "binary",
+                "statement": "A project you're passionate about hits a major obstacle.",
+                "options": [
+                    "Persevere and find a way around it.",
+                    "Consider abandoning it for an easier task."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "Your team faces repeated failures.",
+                "options": [
+                    "Encourage persistence and re-evaluate strategies.",
+                    "Shift focus to more manageable tasks."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "A long-term goal seems increasingly difficult.",
+                "options": [
+                    "Stay committed and adjust tactics.",
+                    "Reconsider if the goal is worth the effort."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "When projects get tough, I:",
+                "options": [
+                    "Consider moving on to something else.",
+                    "Seek assistance to overcome the challenges.",
+                    "Work steadily until completion.",
+                    "Persist with determination no matter the obstacles."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "After repeated setbacks, I:",
+                "options": [
+                    "Feel discouraged and try something different.",
+                    "Reassess my approach and try again.",
+                    "Keep trying different methods until I succeed.",
+                    "Persist tenaciously until I achieve my goals."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Entrepreneurial Motivational Leader",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I inspire others by painting a clear picture of a bold, collective vision."
+            },
+            {
+                "type": "likert",
+                "statement": "I struggle to energize a team around new or uncertain initiatives.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "People often look to me for guidance when tackling ambitious projects.",
+                "negative": false
+            },
+            {
+                "type": "likert",
+                "statement": "I know how to empower others so they can contribute their best efforts."
+            },
+            {
+                "type": "likert",
+                "statement": "I believe strong team motivation can overcome even substantial market obstacles."
+            },
+            {
+                "type": "binary",
+                "statement": "Your team is reluctant to try a risky new approach.",
+                "options": [
+                    "Rally them by clearly outlining potential rewards and providing support to manage the risks.",
+                    "Acknowledge their concerns and revert to safer, proven methods."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You notice a key person on your team feeling undervalued.",
+                "options": [
+                    "Invest time coaching, recognizing achievements, and offering growth paths.",
+                    "Ask them to stay focused on the task, assuming motivation is their responsibility."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "A challenging project requires buy-in from multiple stakeholders.",
+                "options": [
+                    "Spend time building personal connections and explaining why the project matters.",
+                    "Send out brief memos and hope they recognize the project’s value."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "Your team faces a major setback after a failed launch. What is your leadership response?",
+                "negative": false,
+                "options": [
+                    "Gather everyone to discuss lessons learned and rally for a new approach.",
+                    "Send out an encouraging email and move on to the next task.",
+                    "Try to fix the problem yourself before involving the team.",
+                    "Wait for team members to recover on their own."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "You’re leading a diverse group with conflicting ideas about project direction. How do you proceed?",
+                "negative": false,
+                "options": [
+                    "Facilitate a team discussion to reach a shared vision.",
+                    "Decide on the direction yourself and communicate it to the group.",
+                    "Allow each member to pursue their own ideas independently.",
+                    "Ask upper management to settle the disagreement."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Resourceful Bootstrapper",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I can find creative solutions to challenges even under tight resource constraints."
+            },
+            {
+                "type": "likert",
+                "statement": "I excel at repurposing existing resources to meet new demands."
+            },
+            {
+                "type": "likert",
+                "statement": "I struggle when I lack the ideal tools or budget to accomplish my goals.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "I view limitations as an opportunity to innovate rather than an obstacle."
+            },
+            {
+                "type": "likert",
+                "statement": "I can often negotiate or barter for resources that others might consider out of reach."
+            },
+            {
+                "type": "binary",
+                "statement": "Your budget is unexpectedly cut.",
+                "options": [
+                    "Rethink your approach by reusing available materials and seeking creative workarounds.",
+                    "Pause the project until more funding is secured."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "A partner backs out of providing resources you’d counted on.",
+                "options": [
+                    "Explore alternative funding or collaborative options, even if they’re unconventional.",
+                    "Accept that the project might have to be postponed or canceled."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You need specialized talent but can’t afford to hire full-time.",
+                "options": [
+                    "Seek freelancers, interns, or barter arrangements to get the help you need.",
+                    "Put the initiative on hold until you have a proper hiring budget."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "You’re given a project with minimal budget and tight deadlines. How do you proceed?",
+                "negative": false,
+                "options": [
+                    "Get creative with existing tools and rally colleagues for support.",
+                    "Focus only on the absolute essentials to meet the deadline.",
+                    "Request more time or resources before beginning.",
+                    "Delay the project until conditions improve."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "Your team lacks a key skill needed for a new initiative. What’s your first move?",
+                "negative": false,
+                "options": [
+                    "Find a free online course or tutorial and quickly upskill.",
+                    "Outsource the task if budget allows.",
+                    "Suggest postponing the initiative.",
+                    "Ignore the gap and hope it won’t impact results."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Entrepreneurial Opportunity Spotter",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I am quick to notice emerging trends that others overlook."
+            },
+            {
+                "type": "likert",
+                "statement": "I rarely connect day-to-day challenges to possible new ventures.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "I’m often the first to spot gaps in the market that could be addressed."
+            },
+            {
+                "type": "likert",
+                "statement": "Identifying potential opportunities is a natural part of my daily mindset."
+            },
+            {
+                "type": "likert",
+                "statement": "I see unmet customer needs as invitations to innovate rather than mere problems."
+            },
+            {
+                "type": "binary",
+                "statement": "A close friend complains about a service that isn’t meeting their needs.",
+                "options": [
+                    "Brainstorm ways to improve or replace it, considering a potential business idea.",
+                    "Offer empathy but assume the service provider will eventually solve it."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You hear industry experts predicting a potential consumer shift.",
+                "options": [
+                    "Investigate how your company could pivot or create something new to benefit from it.",
+                    "Wait to see if the shift happens before investing effort in any changes."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "A new market segment is growing quickly, but it’s not in your usual area.",
+                "options": [
+                    "Explore if it could be a profitable expansion or partnership opportunity.",
+                    "Remain focused on your existing markets for now."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "You notice a trending technology that hasn’t reached your industry yet. What do you do?",
+                "negative": false,
+                "options": [
+                    "Research how it could be adapted and pitch a pilot project.",
+                    "Wait to see if competitors adopt it first.",
+                    "Discuss it casually with colleagues but don’t take further action.",
+                    "Assume it’s a passing fad and focus on current priorities."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "At a networking event, you hear about a growing demand in an unfamiliar market. What’s your response?",
+                "negative": false,
+                "options": [
+                    "Connect with people from that market to explore possibilities.",
+                    "Read a few articles about it later.",
+                    "Make a mental note, but prioritize your current work.",
+                    "Dismiss it as outside your expertise or interests."
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Growth-Driven Entrepreneur",
+        "questions": [
+            {
+                "type": "likert",
+                "statement": "I consistently think about how to scale a small success into a large opportunity."
+            },
+            {
+                "type": "likert",
+                "statement": "Long-term growth comes second to short-term gains.",
+                "negative": true
+            },
+            {
+                "type": "likert",
+                "statement": "I believe in reinvesting resources in a venture once I see early traction."
+            },
+            {
+                "type": "likert",
+                "statement": "I actively seek feedback loops to refine processes as the business expands."
+            },
+            {
+                "type": "likert",
+                "statement": "I place as much emphasis on structure and systems as on generating new ideas."
+            },
+            {
+                "type": "binary",
+                "statement": "You release a beta product that shows modest success.",
+                "options": [
+                    "Immediately plan how to expand your user base and infrastructure to keep up with potential demand.",
+                    "Wait to see if the growth sustains itself before scaling operations."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "Your company wants to expand into a similar but more competitive market.",
+                "options": [
+                    "Research, adapt, and aim for rapid but strategic expansion.",
+                    "Take a wait-and-see approach until the market becomes less competitive."
+                ]
+            },
+            {
+                "type": "binary",
+                "statement": "You see that your current systems can handle only small-scale production.",
+                "options": [
+                    "Secure partnerships or upgrades so you can scale quickly when demand rises.",
+                    "Focus on your current capacity and address scaling concerns only when they become critical."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "Your company’s flagship product is stable, but market growth is slowing. What’s your approach?",
+                "negative": false,
+                "options": [
+                    "Develop a strategic plan to diversify and enter new markets.",
+                    "Focus on refining and maintaining the current product.",
+                    "Reduce investments until the market rebounds.",
+                    "Wait for competitors to act first before making changes."
+                ]
+            },
+            {
+                "type": "mcq",
+                "statement": "You’re considering scaling operations to meet increasing demand. What’s your first priority?",
+                "negative": false,
+                "options": [
+                    "Assess infrastructure and build systems to support sustainable growth.",
+                    "Increase marketing efforts to boost demand even more.",
+                    "Hire rapidly to fill anticipated gaps.",
+                    "Delay scaling until you have excess resources."
+                ]
+            }
+        ]
+    }
+]
