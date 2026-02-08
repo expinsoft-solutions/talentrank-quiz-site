@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { StartAssessmentResponse } from '@/types';
 
-interface WelcomeScreenProps {
+interface StartAssessmentScreenProps {
   onStart: (data: StartAssessmentResponse) => void;
 }
 
-export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
+export function StartAssessmentScreen({ onStart }: StartAssessmentScreenProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,25 +35,21 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
   }
 
   return (
-    <div className="min-h-screen min-h-[100dvh] flex flex-col items-center justify-center px-4 xs:px-6 sm:px-8 py-8 xs:py-12 sm:py-16 max-w-lg mx-auto w-full text-center safe-top safe-bottom">
-      <h1 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-foreground mb-3 xs:mb-4 tracking-tight px-1">
-        Welcome to TalentRank
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 max-w-md mx-auto">
+      <h1 className="text-2xl font-semibold text-foreground mb-2">
+        TalentRank Assessment
       </h1>
-      <p className="text-muted-foreground text-base xs:text-lg mb-2 leading-relaxed px-1">
-        Discover your personality wiring, work-style fit, and strengths.
-      </p>
-      <p className="text-sm text-muted-foreground/90 mb-8 xs:mb-12 max-w-md leading-relaxed px-1">
-        Answer honestly — there are no right or wrong answers. Your progress is saved as you go.
+      <p className="text-sm text-muted-foreground mb-8 text-center">
+        Answer the questions. Your progress is saved as you go.
       </p>
       {error && (
-        <p className="text-sm text-destructive mb-4 px-2">{error}</p>
+        <p className="text-sm text-destructive mb-4">{error}</p>
       )}
       <Button
         type="button"
         onClick={handleStart}
         disabled={loading}
-        size="lg"
-        className="w-full max-w-[280px] min-w-0 xs:min-w-[220px] h-11 xs:h-12 text-sm xs:text-base font-medium shadow-sm hover:shadow transition-shadow touch-manipulation"
+        className="w-full min-w-[200px]"
       >
         {loading ? 'Starting…' : 'Start Quiz'}
       </Button>
