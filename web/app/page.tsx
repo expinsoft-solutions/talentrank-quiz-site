@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   WelcomeScreen,
   CollectUserScreen,
-  PersonalitySection,
+  LikertSection,
   ShortAnswerSection,
 } from "@/components/quiz";
 import { useDevice } from "@/hooks/use-device";
@@ -18,6 +18,7 @@ type Phase = "start" | "section" | "collect_user" | "complete" | "no_questions";
 interface Session {
   assessmentId: string;
   sectionSteps: SectionStep[];
+  clientToken: string;
 }
 
 export default function Home() {
@@ -36,10 +37,12 @@ export default function Home() {
       excludeCognitive: true,
     });
     const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
-    setSession({
+    const nextSession: Session = {
       assessmentId: data.assessmentId,
       sectionSteps: steps,
-    });
+      clientToken: data.clientToken,
+    };
+    setSession(nextSession);
     setCurrentSectionIndex(0);
     setPhase(steps.length > 0 ? "section" : "no_questions");
   }
@@ -64,7 +67,10 @@ export default function Home() {
     if (!session) return;
     try {
       const { data, error } = await supabase.functions.invoke("score-assessment", {
-        body: { assessmentId: session.assessmentId },
+        body: {
+          assessmentId: session.assessmentId,
+          clientToken: session.clientToken,
+        },
       });
       if (!error && data) {
         setCompleteResult({
@@ -120,8 +126,9 @@ export default function Home() {
     if (step.type === "likert") {
       return (
         <div className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden">
-          <PersonalitySection
+          <LikertSection
             assessmentId={session.assessmentId}
+            clientToken={session.clientToken}
             questions={step.questions}
             sectionId={step.sectionId}
             sectionIndex={step.orderIndex}
@@ -142,6 +149,7 @@ export default function Home() {
         <div className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden">
           <ShortAnswerSection
             assessmentId={session.assessmentId}
+            clientToken={session.clientToken}
             questions={step.questions}
             sectionIndex={step.orderIndex}
             totalSections={steps.length}

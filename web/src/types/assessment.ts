@@ -76,4 +76,5 @@ export interface StartAssessmentResponse {
   assessmentId: string;
   sections: DbSection[];
   questions: DbQuestion[];
+  clientToken: string;
 }

@@ -13,20 +13,38 @@ interface ShortAnswerQuestion {
 
 async function submitResponse(
   assessmentId: string,
+  clientToken: string,
   questionId: string,
   answerRaw: string
-) {
-  await supabase.from('responses').insert({
-    assessment_id: assessmentId,
-    question_id: questionId,
-    answer_raw: answerRaw,
-    answer_numeric: null,
-    time_taken_seconds: null,
-  });
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('responses')
+      .upsert(
+        {
+          assessment_id: assessmentId,
+          client_token: clientToken,
+          question_id: questionId,
+          answer_raw: answerRaw,
+          answer_numeric: null,
+          time_taken_seconds: null,
+        },
+        { onConflict: 'assessment_id,question_id' },
+      );
+    if (error) {
+      console.error('short-answer submitResponse error', error);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('short-answer submitResponse error', e);
+    return false;
+  }
 }
 
 interface ShortAnswerSectionProps {
   assessmentId: string;
+  clientToken?: string | null;
   questions: ShortAnswerQuestion[];
   sectionIndex: number;
   totalSections: number;
@@ -38,6 +56,7 @@ interface ShortAnswerSectionProps {
 
 export function ShortAnswerSection({
   assessmentId,
+  clientToken,
   questions,
   sectionIndex,
   totalSections,
@@ -62,19 +81,22 @@ export function ShortAnswerSection({
 
   const handleBlur = (questionId: string) => {
     const raw = (values[questionId] ?? '').trim();
-    if (raw && !submitted.has(questionId)) {
-      submitResponse(assessmentId, questionId, raw);
-      setSubmitted((prev) => new Set(prev).add(questionId));
+    if (raw && !submitted.has(questionId) && clientToken) {
+      submitResponse(assessmentId, clientToken, questionId, raw).then(() => {
+        setSubmitted((prev) => new Set(prev).add(questionId));
+      });
     }
   };
 
   const handleComplete = () => {
-    questions.forEach((q) => {
-      const raw = (values[q.id] ?? '').trim();
-      if (raw && !submitted.has(q.id)) {
-        submitResponse(assessmentId, q.id, raw);
-      }
-    });
+    if (clientToken) {
+      questions.forEach((q) => {
+        const raw = (values[q.id] ?? '').trim();
+        if (raw && !submitted.has(q.id)) {
+          submitResponse(assessmentId, clientToken, q.id, raw);
+        }
+      });
+    }
     onComplete();
   };
 

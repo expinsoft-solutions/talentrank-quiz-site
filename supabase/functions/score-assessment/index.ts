@@ -14,9 +14,16 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const assessmentId = body?.assessmentId ?? body?.assessment_id;
+    const clientToken = body?.clientToken ?? body?.client_token;
     if (!assessmentId || typeof assessmentId !== 'string') {
       return new Response(
         JSON.stringify({ error: 'assessmentId is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    if (!clientToken || typeof clientToken !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'clientToken is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -24,6 +31,20 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    const { data: assessmentRow, error: assessmentError } = await supabase
+      .from('assessments')
+      .select('id, client_token')
+      .eq('id', assessmentId)
+      .eq('client_token', clientToken)
+      .single();
+
+    if (assessmentError || !assessmentRow) {
+      return new Response(
+        JSON.stringify({ error: 'Assessment not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const [{ data: responses }, { data: questions }] = await Promise.all([
       supabase

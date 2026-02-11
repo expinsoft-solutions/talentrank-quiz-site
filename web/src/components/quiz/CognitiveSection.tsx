@@ -12,18 +12,32 @@ import type { CognitiveAnswer, CognitiveSectionResult } from '@/types';
 
 async function submitResponse(
   assessmentId: string,
+  clientToken: string,
   questionId: string,
   answerRaw: string,
   answerNumeric: number,
   timeTakenSeconds: number | null
-) {
-  await supabase.from('responses').insert({
-    assessment_id: assessmentId,
-    question_id: questionId,
-    answer_raw: answerRaw,
-    answer_numeric: answerNumeric,
-    time_taken_seconds: timeTakenSeconds,
-  });
+): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('responses')
+      .upsert(
+        {
+          assessment_id: assessmentId,
+          client_token: clientToken,
+          question_id: questionId,
+          answer_raw: answerRaw,
+          answer_numeric: answerNumeric,
+          time_taken_seconds: timeTakenSeconds,
+        },
+        { onConflict: 'assessment_id,question_id' },
+      );
+    if (error) {
+      console.error('cognitive submitResponse error', error);
+    }
+  } catch (e) {
+    console.error('cognitive submitResponse error', e);
+  }
 }
 
 const SECTION_TIME_SECONDS = 360;
@@ -36,6 +50,7 @@ function formatTime(seconds: number): string {
 
 interface CognitiveSectionProps {
   assessmentId?: string | null;
+  clientToken?: string | null;
   questions?: CognitiveQuestion[];
   sectionIndex?: number;
   totalSections?: number;
@@ -45,6 +60,7 @@ interface CognitiveSectionProps {
 
 export function CognitiveSection({
   assessmentId,
+  clientToken,
   questions = [],
   sectionIndex,
   totalSections,
@@ -94,8 +110,8 @@ export function CognitiveSection({
           const rest = prev.filter((a) => a.id !== currentQuestion.id);
           return [...rest, { id: currentQuestion.id, answer: num, timeTaken: timeSpent }];
         });
-        if (assessmentId) {
-          submitResponse(assessmentId, currentQuestion.id, inputValue.trim(), num, timeSpent);
+        if (assessmentId && clientToken) {
+          submitResponse(assessmentId, clientToken, currentQuestion.id, inputValue.trim(), num, timeSpent);
         }
       }
     }
@@ -108,16 +124,14 @@ export function CognitiveSection({
     } else {
       const timeSpent = Math.round((Date.now() - questionStartTimeRef.current) / 1000);
       let finalAnswers = [...answers];
-      if (currentQuestion && inputValue.trim() !== '') {
+      if (currentQuestion && inputValue.trim() !== '' && assessmentId && clientToken) {
         const num = Number(inputValue.trim());
         if (!Number.isNaN(num)) {
           finalAnswers = [
             ...answers.filter((a) => a.id !== currentQuestion.id),
             { id: currentQuestion.id, answer: num, timeTaken: timeSpent },
           ];
-          if (assessmentId) {
-            submitResponse(assessmentId, currentQuestion.id, inputValue.trim(), num, timeSpent);
-          }
+          submitResponse(assessmentId, clientToken, currentQuestion.id, inputValue.trim(), num, timeSpent);
         }
       }
       const totalTimeUsed = Math.round((Date.now() - sectionStartTime) / 1000);

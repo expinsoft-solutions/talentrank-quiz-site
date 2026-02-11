@@ -31,6 +31,8 @@ Deno.serve(async (req) => {
       );
     }
 
+    const clientToken = crypto.randomUUID();
+
     const { data: assessmentData, error: assessmentError } = await supabase
       .from('assessments')
       .insert({
@@ -38,8 +40,9 @@ Deno.serve(async (req) => {
         version: ASSESSMENT_VERSION,
         status: 'started',
         started_at: new Date().toISOString(),
+        client_token: clientToken,
       })
-      .select('id')
+      .select('id, client_token')
       .single();
 
     if (assessmentError || !assessmentData?.id) {
@@ -78,6 +81,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         assessmentId: assessmentData.id,
+        clientToken: assessmentData.client_token,
         sections: sectionsRes.data ?? [],
         questions: questionsRes.data ?? [],
       }),
