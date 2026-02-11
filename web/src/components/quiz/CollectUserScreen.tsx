@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { supabase } from '@/lib/supabase';
 
 interface CollectUserScreenProps {
   assessmentId: string;
@@ -31,18 +32,20 @@ export function CollectUserScreen({
     }
     setLoading(true);
     try {
-      const res = await fetch(`/api/assessments/${assessmentId}/user`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const { data, error: fnError } = await supabase.functions.invoke('update-assessment-user', {
+        body: {
+          assessmentId,
           email: trimmed,
           firstName: firstName.trim() || undefined,
           device,
-        }),
+        },
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? 'Failed to save');
+      if (fnError) {
+        setError(fnError.message ?? 'Failed to save');
+        return;
+      }
+      if (data?.error) {
+        setError(data.error);
         return;
       }
       onSaved();

@@ -24,14 +24,9 @@ export interface ShortAnswerSectionStep {
 export type SectionStep = LikertSectionStep | ShortAnswerSectionStep;
 
 export interface GetOrderedSectionStepsOptions {
-  /** Exclude cognitive_architecture section (e.g. when cognitive is disabled). */
   excludeCognitive?: boolean;
 }
 
-/**
- * Build ordered list of section steps from API sections + questions.
- * Excludes cognitive when excludeCognitive is true.
- */
 export function getOrderedSectionSteps(
   sections: DbSection[],
   questions: DbQuestion[],
@@ -68,10 +63,6 @@ export function getOrderedSectionSteps(
   });
 }
 
-/**
- * Fallback when API returns no sections/questions (e.g. Supabase not seeded).
- * Returns empty array so the app can show "No questions available" instead of hardcoded data.
- */
 export function getFallbackSectionSteps(): SectionStep[] {
   return [];
 }

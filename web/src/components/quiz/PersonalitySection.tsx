@@ -11,11 +11,12 @@ import {
 } from '@/components/ui/tooltip';
 import {
   type PersonalityQuestion,
-  AGREE_DISAGREE_SCALE,
-  AGREE_DISAGREE_LABELS,
-  LIKERT_LABELS_7,
+  LIKERT_SCALE_POINTS,
+  getLikertLabelsForQuestion,
+  getLikertAnchorsForQuestion,
 } from '@/data/personalityQuestions';
 import { shuffleArray } from '@/lib/array';
+import { supabase } from '@/lib/supabase';
 import type { PersonalityAnswer } from '@/types';
 
 function randomizedAlternating(questions: PersonalityQuestion[]): PersonalityQuestion[] {
@@ -38,7 +39,6 @@ function getCircleSize(index: number, total: number): string {
   return 'w-7 h-7 min-[480px]:w-9 min-[480px]:h-9 sm:w-11 sm:h-11 min-w-[28px] min-h-[28px] sm:min-w-[44px] sm:min-h-[44px]';
 }
 
-/** Unselected: light gray border only. Selected/hover: muted teal (agree), muted indigo (disagree), gray (neutral). No gradients. */
 function getCircleColor(index: number, total: number, selected: boolean, hover?: boolean): string {
   const mid = (total - 1) / 2;
   const active = selected || hover;
@@ -66,6 +66,7 @@ function getSelectedDotColor(index: number, total: number): string {
 interface PersonalitySectionProps {
   assessmentId?: string | null;
   questions?: PersonalityQuestion[];
+  sectionId?: string;
   sectionIndex?: number;
   totalSections?: number;
   onComplete?: (answers: PersonalityAnswer[]) => void;
@@ -81,21 +82,19 @@ async function submitResponse(
   answerNumeric: number,
   timeTakenSeconds: number | null
 ) {
-  await fetch(`/api/assessments/${assessmentId}/responses`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      questionId,
-      answerRaw,
-      answerNumeric,
-      timeTakenSeconds,
-    }),
+  await supabase.from('responses').insert({
+    assessment_id: assessmentId,
+    question_id: questionId,
+    answer_raw: answerRaw,
+    answer_numeric: answerNumeric,
+    time_taken_seconds: timeTakenSeconds,
   });
 }
 
 export function PersonalitySection({
   assessmentId,
   questions = [],
+  sectionId,
   sectionIndex,
   totalSections,
   onComplete,
@@ -136,7 +135,6 @@ export function PersonalitySection({
 
   return (
     <div className="min-h-screen min-h-[100dvh] flex flex-col px-3 xs:px-4 sm:px-6 py-0 max-w-2xl mx-auto w-full overflow-x-hidden safe-top safe-bottom">
-      {/* Sticky progress bar */}
       <div className="sticky top-0 z-10 w-full -mx-3 xs:-mx-4 sm:-mx-6 px-3 xs:px-4 sm:px-6 pt-3 xs:pt-4 sm:pt-5 pb-3 xs:pb-4 bg-background/95 backdrop-blur-md border-b border-border/80 safe-top">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm text-muted-foreground mb-3 font-medium tracking-wide">
           <span>
@@ -156,6 +154,8 @@ export function PersonalitySection({
             qIndex === 0 ||
             answers.some((a) => a.id === orderedQuestions[qIndex - 1].id);
           const locked = !prevAnswered;
+          const labels = getLikertLabelsForQuestion(sectionId, q.id);
+          const anchors = getLikertAnchorsForQuestion(sectionId, q.id);
           return (
             <div
               key={q.id}
@@ -177,11 +177,11 @@ export function PersonalitySection({
                 </p>
                 <div className="flex items-center gap-1.5 xs:gap-2 sm:gap-3 min-w-0">
                   <span className="text-xs text-muted-foreground shrink-0 w-10 xs:w-14 sm:w-16 text-left">
-                    {AGREE_DISAGREE_LABELS.left}
+                    {anchors.left}
                   </span>
                   <TooltipProvider delayDuration={100} skipDelayDuration={0}>
                     <div className="flex-1 flex items-center justify-between gap-0.5 xs:gap-1 sm:gap-2 min-w-0 shrink-0">
-                      {Array.from({ length: AGREE_DISAGREE_SCALE }, (_, i) => {
+                      {Array.from({ length: LIKERT_SCALE_POINTS }, (_, i) => {
                         const value = i + 1;
                         const selected = selectedValue === value;
                         const hover = hoveredScale?.questionId === q.id && hoveredScale?.value === value;
@@ -199,20 +199,20 @@ export function PersonalitySection({
                                   transition-all duration-[150ms] ease-out
                                   active:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/40
                                   flex-shrink-0
-                                  ${getCircleSize(i, AGREE_DISAGREE_SCALE)}
-                                  ${getCircleColor(i, AGREE_DISAGREE_SCALE, selected, hover)}
+                                  ${getCircleSize(i, LIKERT_SCALE_POINTS)}
+                                  ${getCircleColor(i, LIKERT_SCALE_POINTS, selected, hover)}
                                 `}
-                                aria-label={LIKERT_LABELS_7[i]}
+                                aria-label={labels[i]}
                               >
                                 {selected && (
                                   <span
-                                    className={`w-1.5 h-1.5 rounded-full ring-2 ring-white/50 ${getSelectedDotColor(i, AGREE_DISAGREE_SCALE)}`}
+                                    className={`w-1.5 h-1.5 rounded-full ring-2 ring-white/50 ${getSelectedDotColor(i, LIKERT_SCALE_POINTS)}`}
                                   />
                                 )}
                               </button>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs font-normal">
-                              {LIKERT_LABELS_7[i]}
+                              {labels[i]}
                             </TooltipContent>
                           </Tooltip>
                         );
@@ -220,7 +220,7 @@ export function PersonalitySection({
                     </div>
                   </TooltipProvider>
                   <span className="text-xs text-muted-foreground shrink-0 w-10 xs:w-16 sm:w-20 text-right">
-                    {AGREE_DISAGREE_LABELS.right}
+                    {anchors.right}
                   </span>
                 </div>
               </div>

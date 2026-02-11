@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/lib/supabase';
 
 interface ShortAnswerQuestion {
   id: string;
@@ -15,15 +16,12 @@ async function submitResponse(
   questionId: string,
   answerRaw: string
 ) {
-  await fetch(`/api/assessments/${assessmentId}/responses`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      questionId,
-      answerRaw,
-      answerNumeric: null,
-      timeTakenSeconds: null,
-    }),
+  await supabase.from('responses').insert({
+    assessment_id: assessmentId,
+    question_id: questionId,
+    answer_raw: answerRaw,
+    answer_numeric: null,
+    time_taken_seconds: null,
   });
 }
 
@@ -82,7 +80,6 @@ export function ShortAnswerSection({
 
   return (
     <div className="min-h-screen min-h-[100dvh] flex flex-col px-3 xs:px-4 sm:px-6 py-0 max-w-2xl mx-auto w-full overflow-x-hidden safe-top safe-bottom">
-      {/* Sticky progress bar */}
       <div className="sticky top-0 z-10 w-full -mx-3 xs:-mx-4 sm:-mx-6 px-3 xs:px-4 sm:px-6 pt-3 xs:pt-4 sm:pt-5 pb-3 xs:pb-4 bg-background/95 backdrop-blur-md border-b border-border/80 safe-top">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm text-muted-foreground mb-3 font-medium tracking-wide">
           <span>

@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import type { CognitiveQuestion } from '@/types';
 import { shuffleArray } from '@/lib/array';
+import { supabase } from '@/lib/supabase';
 import type { CognitiveAnswer, CognitiveSectionResult } from '@/types';
 
 async function submitResponse(
@@ -16,15 +17,12 @@ async function submitResponse(
   answerNumeric: number,
   timeTakenSeconds: number | null
 ) {
-  await fetch(`/api/assessments/${assessmentId}/responses`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      questionId,
-      answerRaw,
-      answerNumeric,
-      timeTakenSeconds,
-    }),
+  await supabase.from('responses').insert({
+    assessment_id: assessmentId,
+    question_id: questionId,
+    answer_raw: answerRaw,
+    answer_numeric: answerNumeric,
+    time_taken_seconds: timeTakenSeconds,
   });
 }
 

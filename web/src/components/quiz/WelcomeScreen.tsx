@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/lib/supabase';
 import type { StartAssessmentResponse } from '@/types';
 
 interface WelcomeScreenProps {
@@ -16,14 +17,15 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch('/api/assessments/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+      const { data, error: fnError } = await supabase.functions.invoke('start-assessment', {
+        body: {},
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? 'Failed to start assessment');
+      if (fnError) {
+        setError(fnError.message ?? 'Failed to start assessment');
+        return;
+      }
+      if (data?.error) {
+        setError(data.error);
         return;
       }
       onStart(data as StartAssessmentResponse);

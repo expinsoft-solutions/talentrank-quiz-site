@@ -8,6 +8,7 @@ import {
   ShortAnswerSection,
 } from "@/components/quiz";
 import { useDevice } from "@/hooks/use-device";
+import { supabase } from "@/lib/supabase";
 import { getOrderedSectionSteps, getFallbackSectionSteps } from "@/lib/assessment";
 import type { PersonalityAnswer, StartAssessmentResponse } from "@/types";
 import type { SectionStep } from "@/lib/assessment";
@@ -62,12 +63,10 @@ export default function Home() {
   async function completeAssessmentAndGoToCollectUser() {
     if (!session) return;
     try {
-      const res = await fetch(
-        `/api/assessments/${session.assessmentId}/complete`,
-        { method: "POST" }
-      );
-      const data = await res.json();
-      if (res.ok) {
+      const { data, error } = await supabase.functions.invoke("score-assessment", {
+        body: { assessmentId: session.assessmentId },
+      });
+      if (!error && data) {
         setCompleteResult({
           mbti: data.mbti ?? "—",
           axisStrengths: data.axisStrengths ?? {},
@@ -124,6 +123,7 @@ export default function Home() {
           <PersonalitySection
             assessmentId={session.assessmentId}
             questions={step.questions}
+            sectionId={step.sectionId}
             sectionIndex={step.orderIndex}
             totalSections={steps.length}
             onComplete={(_answers: PersonalityAnswer[]) =>
