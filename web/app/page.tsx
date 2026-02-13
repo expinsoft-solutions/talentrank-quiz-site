@@ -1,196 +1,85 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  WelcomeScreen,
-  CollectUserScreen,
-  LikertSection,
-  ShortAnswerSection,
-} from "@/components/quiz";
-import { useDevice } from "@/hooks/use-device";
-import { supabase } from "@/lib/supabase";
-import { getOrderedSectionSteps, getFallbackSectionSteps } from "@/lib/assessment";
-import type { PersonalityAnswer, StartAssessmentResponse } from "@/types";
-import type { SectionStep } from "@/lib/assessment";
-
-type Phase = "start" | "section" | "collect_user" | "complete" | "no_questions";
-
-interface Session {
-  assessmentId: string;
-  sectionSteps: SectionStep[];
-  clientToken: string;
-}
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Loader } from '@/components/ui/loader';
+import { setResumeCookie } from '@/lib/resume-cookie';
+import { getOrderedSectionSteps, getFallbackSectionSteps } from '@/lib/assessment';
+import { supabase } from '@/lib/supabase';
+import type { StartAssessmentResponse } from '@/types';
 
 export default function Home() {
-  const device = useDevice();
-  const [phase, setPhase] = useState<Phase>("start");
-  const [session, setSession] = useState<Session | null>(null);
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [completeResult, setCompleteResult] = useState<{
-    mbti: string;
-    axisStrengths: Record<string, number>;
-    iqPercentile: number;
-  } | null>(null);
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleStart(data: StartAssessmentResponse) {
-    const sectionSteps = getOrderedSectionSteps(data.sections, data.questions, {
-      excludeCognitive: true,
-    });
-    const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
-    const nextSession: Session = {
-      assessmentId: data.assessmentId,
-      sectionSteps: steps,
-      clientToken: data.clientToken,
-    };
-    setSession(nextSession);
-    setCurrentSectionIndex(0);
-    setPhase(steps.length > 0 ? "section" : "no_questions");
-  }
-
-  function handleSectionComplete() {
-    if (!session) return;
-    const next = currentSectionIndex + 1;
-    if (next < session.sectionSteps.length) {
-      setCurrentSectionIndex(next);
-      return;
-    }
-    completeAssessmentAndGoToCollectUser();
-  }
-
-  function handleSectionPrevious() {
-    if (currentSectionIndex > 0) {
-      setCurrentSectionIndex(currentSectionIndex - 1);
-    }
-  }
-
-  async function completeAssessmentAndGoToCollectUser() {
-    if (!session) return;
+  async function handleStart() {
+    setError(null);
+    setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("score-assessment", {
-        body: {
-          assessmentId: session.assessmentId,
-          clientToken: session.clientToken,
-        },
+      const { data, error: fnError } = await supabase.functions.invoke('start-assessment', {
+        body: {},
       });
-      if (!error && data) {
-        setCompleteResult({
-          mbti: data.mbti ?? "—",
-          axisStrengths: data.axisStrengths ?? {},
-          iqPercentile: data.iqPercentile ?? 0,
-        });
-      } else {
-        setCompleteResult({
-          mbti: "—",
-          axisStrengths: {},
-          iqPercentile: 0,
+      if (fnError) {
+        setError(fnError.message ?? 'Failed to start assessment');
+        setLoading(false);
+        return;
+      }
+      if (data?.error) {
+        setError(data.error);
+        setLoading(false);
+        return;
+      }
+      const res = data as StartAssessmentResponse;
+      const sectionSteps = getOrderedSectionSteps(res.sections, res.questions, {
+        excludeCognitive: true,
+      });
+      const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
+      if (steps.length > 0) {
+        setResumeCookie({
+          assessmentId: res.assessmentId,
+          clientToken: res.clientToken,
+          phase: 'section',
+          sectionIndex: 0,
+          questionIndex: 0,
         });
       }
+      router.push('/assessment');
     } catch {
-      setCompleteResult({
-        mbti: "—",
-        axisStrengths: {},
-        iqPercentile: 0,
-      });
+      setError('Network error');
+      setLoading(false);
     }
-    setPhase("collect_user");
   }
 
-  function handleUserSaved() {
-    setPhase("complete");
-  }
-
-  if (phase === "start") {
-    return (
-      <div className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden">
-        <WelcomeScreen onStart={handleStart} />
-      </div>
-    );
-  }
-
-  if (phase === "no_questions") {
-    return (
-      <div className="min-h-screen min-h-[100dvh] bg-background flex flex-col items-center justify-center px-6 py-12 text-center">
-        <h1 className="text-xl font-semibold text-foreground mb-2">No questions available</h1>
-        <p className="text-sm text-muted-foreground max-w-md">
-          The database has no sections or questions yet. Run the seed script in Supabase (e.g. <code className="rounded bg-muted px-1 text-xs">supabase/seed.sql</code>) and try again.
-        </p>
-      </div>
-    );
-  }
-
-  if (phase === "section" && session) {
-    const steps = session.sectionSteps;
-    const step = steps[currentSectionIndex];
-    if (!step) return null;
-
-    if (step.type === "likert") {
-      return (
-        <div className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden">
-          <LikertSection
-            assessmentId={session.assessmentId}
-            clientToken={session.clientToken}
-            questions={step.questions}
-            sectionId={step.sectionId}
-            sectionIndex={step.orderIndex}
-            totalSections={steps.length}
-            onComplete={(_answers: PersonalityAnswer[]) =>
-              handleSectionComplete()
-            }
-            onPrevious={handleSectionPrevious}
-            isFirstSection={currentSectionIndex === 0}
-            isLastSection={currentSectionIndex === steps.length - 1}
-          />
-        </div>
-      );
-    }
-
-    if (step.type === "text") {
-      return (
-        <div className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden">
-          <ShortAnswerSection
-            assessmentId={session.assessmentId}
-            clientToken={session.clientToken}
-            questions={step.questions}
-            sectionIndex={step.orderIndex}
-            totalSections={steps.length}
-            onComplete={handleSectionComplete}
-            onPrevious={handleSectionPrevious}
-            isFirstSection={currentSectionIndex === 0}
-            isLastSection={currentSectionIndex === steps.length - 1}
-          />
-        </div>
-      );
-    }
-
-    return null;
-  }
-
-  if (phase === "collect_user" && session) {
-    return (
-      <div className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden">
-        <CollectUserScreen
-          assessmentId={session.assessmentId}
-          device={device}
-          onSaved={handleUserSaved}
-        />
-      </div>
-    );
-  }
-
-  if (phase === "complete" && completeResult) {
-    return (
-      <div className="min-h-screen min-h-[100dvh] bg-background flex flex-col items-center justify-center px-4 xs:px-6 sm:px-8 py-6 xs:py-8 safe-top safe-bottom">
-        <h1 className="text-xl xs:text-2xl sm:text-3xl font-semibold text-foreground mb-4 text-center">
-          Assessment complete
+  return (
+    <div className="min-h-screen min-h-[100dvh] bg-background flex flex-col items-center justify-center px-6 py-12 text-center">
+      <div className="w-full max-w-xl space-y-8">
+        <h1 className="text-3xl sm:text-4xl font-semibold text-foreground tracking-tight">
+          TalentRank
         </h1>
-        <div className="text-left space-y-2 text-sm xs:text-base text-muted-foreground w-full max-w-md">
-          <p>Type: {completeResult.mbti}</p>
-          <p>Axis strengths: {JSON.stringify(completeResult.axisStrengths)}</p>
-          <p>IQ percentile: {completeResult.iqPercentile}</p>
-        </div>
+        <p className="text-muted-foreground leading-relaxed">
+          Discover how you’re wired and where you shine. Take the assessment to get your personality
+          type, axis strengths, and a personalized report.
+        </p>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <Button
+          type="button"
+          onClick={handleStart}
+          disabled={loading}
+          size="lg"
+          className="min-w-[200px] h-12 text-base font-medium rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm disabled:opacity-70"
+        >
+          {loading ? (
+            <span className="inline-flex items-center gap-2">
+              <Loader size="sm" className="border-t-white" />
+              Starting…
+            </span>
+          ) : (
+            'Start assessment'
+          )}
+        </Button>
       </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 }

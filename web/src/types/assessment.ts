@@ -78,3 +78,18 @@ export interface StartAssessmentResponse {
   questions: DbQuestion[];
   clientToken: string;
 }
+
+export interface ResumeResponseRow {
+  question_id: string;
+  answer_numeric: number | null;
+  answer_raw: string | null;
+}
+
+export interface ResumeAssessmentResponse {
+  assessmentId: string;
+  clientToken: string;
+  status: string;
+  sections: DbSection[];
+  questions: DbQuestion[];
+  responses: ResumeResponseRow[];
+}
