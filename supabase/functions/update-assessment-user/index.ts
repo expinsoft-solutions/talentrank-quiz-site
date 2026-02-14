@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     const { data: assessmentData, error: fetchError } = await supabase
-      .from('assessments')
+      .from('assessment_attempts')
       .select('user_id')
       .eq('id', assessmentId)
       .single();
@@ -62,9 +62,17 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       console.error('users update error', updateError);
+      const isEmailTaken = updateError.code === '23505';
       return new Response(
-        JSON.stringify({ error: 'Failed to save user details' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({
+          error: isEmailTaken
+            ? 'This email is already used for another assessment.'
+            : 'Failed to save user details',
+        }),
+        {
+          status: isEmailTaken ? 409 : 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
 

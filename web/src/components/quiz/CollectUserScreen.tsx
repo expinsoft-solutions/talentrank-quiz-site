@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase';
 interface CollectUserScreenProps {
   assessmentId: string;
   device: 'desktop' | 'mobile' | 'tablet';
-  onSaved: () => void;
+  onSaved: (firstName?: string) => void;
 }
 
 export function CollectUserScreen({
@@ -41,14 +41,25 @@ export function CollectUserScreen({
         },
       });
       if (fnError) {
-        setError(fnError.message ?? 'Failed to save');
+        // Prefer the Edge Function body message (e.g. "This email is already used...")
+        let message: string = fnError.message ?? 'Failed to save';
+        const res = (fnError as { context?: Response }).context;
+        if (res && typeof (res as Response).json === 'function') {
+          try {
+            const body = await (res as Response).json();
+            if (body?.error && typeof body.error === 'string') message = body.error;
+          } catch {
+            /* ignore parse errors */
+          }
+        }
+        setError(message);
         return;
       }
       if (data?.error) {
         setError(data.error);
         return;
       }
-      onSaved();
+      onSaved(firstName.trim() || undefined);
     } catch {
       setError('Network error');
     } finally {

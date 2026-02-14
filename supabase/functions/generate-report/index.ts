@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { parseQuestionnaire } from '../_shared/questionnaire.ts';
 import {
   buildAssessmentDataBlock,
   buildUserMessage,
@@ -12,7 +13,7 @@ const corsHeaders = {
 };
 
 const ANTHROPIC_VERSION = '2023-06-01';
-const MODEL = 'claude-2.1';
+const MODEL = 'claude-3-haiku-20240307';
 const MAX_TOKENS = 1024;
 
 Deno.serve(async (req) => {
@@ -51,8 +52,8 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     const { data: assessmentRow, error: assessmentError } = await supabase
-      .from('assessments')
-      .select('id, user_id, client_token, status, mbti, axis_strengths, cognitive_percentile, report_text')
+      .from('assessment_attempts')
+      .select('id, user_id, client_token, status, mbti, axis_strengths, cognitive_percentile, report_text, questionnaire_version_id')
       .eq('id', assessmentId)
       .eq('client_token', clientToken)
       .single();
@@ -85,16 +86,23 @@ Deno.serve(async (req) => {
       .not('answer_raw', 'is', null);
 
     const questionIds = [...new Set((responses ?? []).map((r: { question_id: string }) => r.question_id))];
-    const [{ data: userRow }, { data: questions }] = await Promise.all([
-      assessmentRow.user_id
-        ? supabase.from('users').select('first_name').eq('id', assessmentRow.user_id).single()
-        : Promise.resolve({ data: null }),
-      questionIds.length > 0
-        ? supabase.from('questions').select('id, text').in('id', questionIds)
-        : Promise.resolve({ data: [] }),
-    ]);
+    let questionMap = new Map<string, string>();
 
-    const questionMap = new Map((questions ?? []).map((q: { id: string; text: string }) => [q.id, q.text]));
+    if (assessmentRow.questionnaire_version_id) {
+      const { data: qv } = await supabase
+        .from('assessments')
+        .select('questionnaire')
+        .eq('id', assessmentRow.questionnaire_version_id)
+        .single();
+      if (qv?.questionnaire) {
+        const parsed = parseQuestionnaire(qv.questionnaire);
+        questionMap = new Map(parsed.questions.map((q) => [q.id, q.text]));
+      }
+    }
+
+    const { data: userRow } = assessmentRow.user_id
+      ? await supabase.from('users').select('first_name').eq('id', assessmentRow.user_id).single()
+      : { data: null };
     const shortAnswers: Array<{ questionText: string; answerRaw: string }> = [];
     for (const r of responses ?? []) {
       const text = questionMap.get(r.question_id);
@@ -151,7 +159,7 @@ Deno.serve(async (req) => {
     const reportText = textBlock?.text ?? '';
 
     const { error: updateError } = await supabase
-      .from('assessments')
+      .from('assessment_attempts')
       .update({ report_text: reportText })
       .eq('id', assessmentId);
 

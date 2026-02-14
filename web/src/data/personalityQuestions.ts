@@ -44,20 +44,3 @@ export function getLikertAnchorsForQuestion(sectionId: string | undefined, quest
   const labels = getLikertLabelsForQuestion(sectionId, questionId);
   return { left: labels[0], right: labels[labels.length - 1] };
 }
-
-export const AGREE_DISAGREE_SCALE = 7;
-
-export const LIKERT_LABELS_7 = [
-  'Strongly Agree',
-  'Agree',
-  'Slightly Agree',
-  'Neutral',
-  'Slightly Disagree',
-  'Disagree',
-  'Strongly Disagree',
-] as const;
-
-export const AGREE_DISAGREE_LABELS = {
-  left: 'Agree',
-  right: 'Disagree',
-} as const;

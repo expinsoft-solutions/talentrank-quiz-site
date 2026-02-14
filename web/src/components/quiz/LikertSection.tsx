@@ -63,7 +63,6 @@ interface LikertSectionProps {
   onProgress?: (sectionIndex: number, questionIndex: number) => void;
   onResponseSaved?: (questionId: string, answerNumeric: number) => void;
   isFirstSection?: boolean;
-  /** Accepted for API compatibility; not used. */
   isLastSection?: boolean;
 }
 
@@ -89,13 +88,9 @@ async function submitResponse(
         },
         { onConflict: 'assessment_id,question_id' },
       );
-    if (error) {
-      console.error('submitResponse error', error);
-      return false;
-    }
+    if (error) return false;
     return true;
-  } catch (e) {
-    console.error('submitResponse error', e);
+  } catch {
     return false;
   }
 }

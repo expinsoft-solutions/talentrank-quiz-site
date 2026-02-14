@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { parseQuestionnaire } from '../_shared/questionnaire.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,8 +33,8 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     const { data: assessmentRow, error: assessmentError } = await supabase
-      .from('assessments')
-      .select('id, client_token, status')
+      .from('assessment_attempts')
+      .select('id, client_token, status, questionnaire_version_id')
       .eq('id', assessmentId)
       .eq('client_token', clientToken)
       .single();
@@ -45,36 +46,29 @@ Deno.serve(async (req) => {
       );
     }
 
-    const [sectionsRes, questionsRes, responsesRes] = await Promise.all([
-      supabase.from('sections').select('*').order('order_index'),
-      supabase
-        .from('questions')
-        .select('id, section_id, text, type, dimension, reverse_scored, weight, correct_answer, active')
-        .eq('active', true)
-        .order('section_id')
-        .order('id'),
-      supabase
-        .from('responses')
-        .select('question_id, answer_numeric, answer_raw')
-        .eq('assessment_id', assessmentId),
-    ]);
+    let sections: Array<Record<string, unknown>> = [];
+    let questions: Array<Record<string, unknown>> = [];
 
-    if (sectionsRes.error) {
-      console.error('sections fetch error', sectionsRes.error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch sections' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (assessmentRow.questionnaire_version_id) {
+      const { data: qv } = await supabase
+        .from('assessments')
+        .select('questionnaire')
+        .eq('id', assessmentRow.questionnaire_version_id)
+        .single();
+      if (qv?.questionnaire) {
+        const parsed = parseQuestionnaire(qv.questionnaire);
+        sections = parsed.sections as Array<Record<string, unknown>>;
+        questions = (parsed.questions as Array<Record<string, unknown>>).filter((q) => q.active !== false) as Array<Record<string, unknown>>;
+      }
     }
-    if (questionsRes.error) {
-      console.error('questions fetch error', questionsRes.error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch questions' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    if (responsesRes.error) {
-      console.error('responses fetch error', responsesRes.error);
+
+    const { data: responses, error: responsesError } = await supabase
+      .from('responses')
+      .select('question_id, answer_numeric, answer_raw')
+      .eq('assessment_id', assessmentId);
+
+    if (responsesError) {
+      console.error('responses fetch error', responsesError);
       return new Response(
         JSON.stringify({ error: 'Failed to fetch responses' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -86,9 +80,9 @@ Deno.serve(async (req) => {
         assessmentId: assessmentRow.id,
         clientToken: assessmentRow.client_token,
         status: assessmentRow.status,
-        sections: sectionsRes.data ?? [],
-        questions: questionsRes.data ?? [],
-        responses: responsesRes.data ?? [],
+        sections,
+        questions,
+        responses: responses ?? [],
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

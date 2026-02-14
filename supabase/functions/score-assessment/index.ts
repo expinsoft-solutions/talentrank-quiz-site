@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { parseQuestionnaire } from '../_shared/questionnaire.ts';
 import { scoreAssessment } from './scoring.ts';
 
 const corsHeaders = {
@@ -33,8 +34,8 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     const { data: assessmentRow, error: assessmentError } = await supabase
-      .from('assessments')
-      .select('id, client_token')
+      .from('assessment_attempts')
+      .select('id, client_token, questionnaire_version_id')
       .eq('id', assessmentId)
       .eq('client_token', clientToken)
       .single();
@@ -46,15 +47,24 @@ Deno.serve(async (req) => {
       );
     }
 
-    const [{ data: responses }, { data: questions }] = await Promise.all([
-      supabase
-        .from('responses')
-        .select('question_id, answer_numeric, time_taken_seconds')
-        .eq('assessment_id', assessmentId),
-      supabase
-        .from('questions')
-        .select('id, section_id, type, dimension, reverse_scored, weight, correct_answer'),
-    ]);
+    let questions: Array<{ id: string; section_id: string; type: string | null; dimension: string | null; reverse_scored: boolean | null; weight: number | null; correct_answer: string | null }> = [];
+
+    if (assessmentRow.questionnaire_version_id) {
+      const { data: qv } = await supabase
+        .from('assessments')
+        .select('questionnaire')
+        .eq('id', assessmentRow.questionnaire_version_id)
+        .single();
+      if (qv?.questionnaire) {
+        const parsed = parseQuestionnaire(qv.questionnaire);
+        questions = parsed.questions;
+      }
+    }
+
+    const { data: responses } = await supabase
+      .from('responses')
+      .select('question_id, answer_numeric, time_taken_seconds')
+      .eq('assessment_id', assessmentId);
 
     const totalTimeSeconds =
       (responses ?? []).reduce((sum, r) => sum + (r.time_taken_seconds ?? 0), 0);
@@ -65,7 +75,7 @@ Deno.serve(async (req) => {
     });
 
     const { error: updateError } = await supabase
-      .from('assessments')
+      .from('assessment_attempts')
       .update({
         status: 'completed',
         completed_at: completedAt,

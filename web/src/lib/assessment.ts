@@ -1,4 +1,4 @@
-import type { DbQuestion, DbSection, CognitiveQuestion } from '@/types';
+import type { DbQuestion, DbSection } from '@/types';
 import type { PersonalityQuestion } from '@/data/personalityQuestions';
 
 const PERSONALITY_SECTION_ID = 'personality_wiring';
@@ -65,23 +65,4 @@ export function getOrderedSectionSteps(
 
 export function getFallbackSectionSteps(): SectionStep[] {
   return [];
-}
-
-export function mapPersonalityQuestions(dbQuestions: DbQuestion[]): PersonalityQuestion[] {
-  return dbQuestions
-    .filter((q) => q.section_id === PERSONALITY_SECTION_ID)
-    .map((q) => ({
-      id: q.id,
-      question: q.text,
-      keyed: q.reverse_scored ? ('negative' as const) : ('positive' as const),
-    }));
-}
-
-export function mapCognitiveQuestions(dbQuestions: DbQuestion[]): CognitiveQuestion[] {
-  return dbQuestions
-    .filter((q) => q.section_id === COGNITIVE_SECTION_ID)
-    .map((q) => ({
-      id: q.id,
-      question: q.text,
-    }));
 }

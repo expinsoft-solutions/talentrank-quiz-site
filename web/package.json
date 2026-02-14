@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "questionnaire:load": "node scripts/load-questionnaire.js",
+    "questionnaire:export": "node scripts/export-questionnaire.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -1,11 +1,12 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { parseQuestionnaire } from '../_shared/questionnaire.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const ASSESSMENT_VERSION = 'v1.0';
+const QUESTIONNAIRE_VERSION = 'v1.0';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -33,14 +34,23 @@ Deno.serve(async (req) => {
 
     const clientToken = crypto.randomUUID();
 
-    const { data: assessmentData, error: assessmentError } = await supabase
+    const { data: versionRow } = await supabase
       .from('assessments')
+      .select('id')
+      .eq('version', QUESTIONNAIRE_VERSION)
+      .single();
+
+    const questionnaireVersionId = versionRow?.id ?? null;
+
+    const { data: assessmentData, error: assessmentError } = await supabase
+      .from('assessment_attempts')
       .insert({
         user_id: userData.id,
-        version: ASSESSMENT_VERSION,
+        version: QUESTIONNAIRE_VERSION,
         status: 'started',
         started_at: new Date().toISOString(),
         client_token: clientToken,
+        questionnaire_version_id: questionnaireVersionId,
       })
       .select('id, client_token')
       .single();
@@ -53,37 +63,28 @@ Deno.serve(async (req) => {
       );
     }
 
-    const [sectionsRes, questionsRes] = await Promise.all([
-      supabase.from('sections').select('*').order('order_index'),
-      supabase
-        .from('questions')
-        .select('id, section_id, text, type, dimension, reverse_scored, weight, correct_answer, active')
-        .eq('active', true)
-        .order('section_id')
-        .order('id'),
-    ]);
+    let sections: Array<Record<string, unknown>> = [];
+    let questions: Array<Record<string, unknown>> = [];
 
-    if (sectionsRes.error) {
-      console.error('sections fetch error', sectionsRes.error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch sections' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    if (questionsRes.error) {
-      console.error('questions fetch error', questionsRes.error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch questions' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (versionRow?.id) {
+      const { data: qv } = await supabase
+        .from('assessments')
+        .select('questionnaire')
+        .eq('id', versionRow.id)
+        .single();
+      if (qv?.questionnaire) {
+        const parsed = parseQuestionnaire(qv.questionnaire);
+        sections = parsed.sections as Array<Record<string, unknown>>;
+        questions = (parsed.questions as Array<Record<string, unknown>>).filter((q) => q.active !== false) as Array<Record<string, unknown>>;
+      }
     }
 
     return new Response(
       JSON.stringify({
         assessmentId: assessmentData.id,
         clientToken: assessmentData.client_token,
-        sections: sectionsRes.data ?? [],
-        questions: questionsRes.data ?? [],
+        sections,
+        questions,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
