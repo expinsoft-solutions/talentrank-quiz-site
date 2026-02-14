@@ -10,3 +10,4 @@ web/node_modules
 .~lock.*
 requirements/.~lock.*
 supabase/.temp
+node_modules
