@@ -28,15 +28,15 @@ export interface PersonalityScoreResult {
 }
 
 interface ResponseRow {
-  question_id: string;
-  answer_numeric: number | null;
+  questionId: string;
+  answerNumeric: number | null;
 }
 
 interface QuestionRow {
   id: string;
-  section_id: string;
+  sectionId: string;
   dimension: string | null;
-  reverse_scored: boolean | null;
+  reverseScored: boolean | null;
   weight: number | null;
 }
 
@@ -53,20 +53,20 @@ export function scorePersonality(
   const scalePoints = options.scalePoints ?? 7;
   const { max: SCALE_MAX, mid: SCALE_MID } = SCALE_CONFIG[scalePoints];
 
-  const questionsBySection = questions.filter((q) => q.section_id === PERSONALITY_SECTION_ID);
+  const questionsBySection = questions.filter((q) => q.sectionId === PERSONALITY_SECTION_ID);
   const questionMap = new Map(questionsBySection.map((q) => [q.id, q]));
 
   const dimensionScores: Record<string, { sum: number; count: number }> = {};
 
   for (const r of responses) {
-    const q = questionMap.get(r.question_id);
-    if (!q?.dimension || r.answer_numeric == null) continue;
+    const q = questionMap.get(r.questionId);
+    if (!q?.dimension || r.answerNumeric == null) continue;
 
     const dim = q.dimension;
     if (!dimensionScores[dim]) dimensionScores[dim] = { sum: 0, count: 0 };
 
     const weight = q.weight ?? 1;
-    const value = scoredValue(r.answer_numeric, q.reverse_scored ?? false, SCALE_MAX);
+    const value = scoredValue(r.answerNumeric, q.reverseScored ?? false, SCALE_MAX);
     dimensionScores[dim].sum += value * weight;
     dimensionScores[dim].count += 1;
   }

@@ -60,9 +60,32 @@ export async function GET(
     .eq('assessment_id', id)
     .order('question_id');
 
+  const attemptOut = {
+    id: attempt.id,
+    status: attempt.status,
+    startedAt: attempt.started_at,
+    completedAt: attempt.completed_at,
+    mbti: attempt.mbti,
+    axisStrengths: attempt.axis_strengths,
+    cognitivePercentile: attempt.cognitive_percentile,
+    neuroticismScore: attempt.neuroticism_score,
+    reportText: attempt.report_text,
+  };
+
+  const userOut = user
+    ? { email: user.email, firstName: user.first_name, device: user.device }
+    : {};
+
+  const responsesOut = (responses ?? []).map((r) => ({
+    questionId: r.question_id,
+    answerNumeric: r.answer_numeric,
+    answerRaw: r.answer_raw,
+    timeTakenSeconds: r.time_taken_seconds,
+  }));
+
   return NextResponse.json({
-    attempt,
-    user: user ?? {},
-    responses: responses ?? [],
+    attempt: attemptOut,
+    user: userOut,
+    responses: responsesOut,
   });
 }

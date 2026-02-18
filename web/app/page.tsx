@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
-import { getResumeCookie, setResumeCookie, clearResumeCookie } from '@/lib/resume-cookie';
+import { getCompletedUserId } from '@/lib/user-id-storage';
+import { getResumeState, setResumeState, clearResumeState } from '@/lib/resume-storage';
 import { getOrderedSectionSteps, getFallbackSectionSteps } from '@/lib/assessment';
 import type { StartAssessmentResponse } from '@/types';
 
@@ -15,17 +16,22 @@ export default function Home() {
   const [hasResume, setHasResume] = useState(false);
 
   useEffect(() => {
-    setHasResume(getResumeCookie() !== null);
+    setHasResume(getResumeState() !== null);
   }, []);
 
   async function handleStart(clearExisting = false) {
     if (clearExisting) {
-      clearResumeCookie();
+      clearResumeState();
     }
     setError(null);
     setLoading(true);
     try {
-      const response = await fetch('/api/start-assessment', { method: 'POST' });
+      const userId = getCompletedUserId();
+      const response = await fetch('/api/start-assessment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userId ? { userId } : {}),
+      });
       const data = await response.json();
       if (!response.ok) {
         setError(data.error ?? 'Failed to start assessment');
@@ -43,12 +49,15 @@ export default function Home() {
       });
       const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
       if (steps.length > 0) {
-        setResumeCookie({
+        setResumeState({
           assessmentId: res.assessmentId,
           clientToken: res.clientToken,
           phase: 'section',
           sectionIndex: 0,
           questionIndex: 0,
+          sections: res.sections,
+          questions: res.questions,
+          responses: {},
         });
       }
       router.push('/assessment');

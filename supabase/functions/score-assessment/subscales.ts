@@ -1,10 +1,10 @@
 const SCALE_MAX = 5;
 const SECTIONS = { self_sabotage: 'self_sabotage', optimal_environment: 'optimal_environment' } as const;
 
-interface ResponseRow { question_id: string; answer_numeric: number | null; }
+interface ResponseRow { questionId: string; answerNumeric: number | null; }
 interface QuestionRow {
-  id: string; section_id: string; dimension: string | null;
-  reverse_scored: boolean | null; weight: number | null;
+  id: string; sectionId: string; dimension: string | null;
+  reverseScored: boolean | null; weight: number | null;
 }
 
 function scoredValue(raw: number, reverse: boolean): number {
@@ -17,15 +17,15 @@ function scoreSectionByDimension(
   questions: QuestionRow[],
   sectionId: string
 ): Record<string, number> {
-  const sectionQuestions = questions.filter((q) => q.section_id === sectionId);
+  const sectionQuestions = questions.filter((q) => q.sectionId === sectionId);
   const questionMap = new Map(sectionQuestions.map((q) => [q.id, q]));
   const dimensionScores: Record<string, { sum: number; count: number }> = {};
   for (const r of responses) {
-    const q = questionMap.get(r.question_id);
-    if (!q?.dimension || r.answer_numeric == null) continue;
+    const q = questionMap.get(r.questionId);
+    if (!q?.dimension || r.answerNumeric == null) continue;
     const dim = q.dimension;
     if (!dimensionScores[dim]) dimensionScores[dim] = { sum: 0, count: 0 };
-    const value = scoredValue(r.answer_numeric, q.reverse_scored ?? false);
+    const value = scoredValue(r.answerNumeric, q.reverseScored ?? false);
     dimensionScores[dim].sum += value * (q.weight ?? 1);
     dimensionScores[dim].count += 1;
   }

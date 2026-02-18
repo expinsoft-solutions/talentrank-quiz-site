@@ -4,17 +4,17 @@ import { scoreSubscales } from './subscales.ts';
 
 interface Response {
   questionId: string;
-  answerIndex: number | null;
-  timeTakenInSeconds: number | null;
+  answerNumeric: number | null;
+  timeTakenSeconds: number | null;
 }
 interface Question {
   id: string;
-  section_id: string;
+  sectionId: string;
   type: string | null;
   dimension: string | null;
   reverseScored: boolean | null;
   weight: number | null;
-  options: string | null;
+  correctAnswer: string | null;
 }
 
 export interface ScoreAssessmentResult {

@@ -4,7 +4,6 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { ResultView } from '@/components/quiz';
 import { Loader } from '@/components/ui/loader';
-import { supabase } from '@/lib/supabase';
 import type { CompleteResult } from '@/components/quiz/ResultView';
 
 export default function ResultPage() {
@@ -37,11 +36,14 @@ function ResultPageContent() {
 
     (async () => {
       try {
-        const { data, error: fnError } = await supabase.functions.invoke('get-assessment-result', {
-          body: { assessmentId, clientToken },
+        const res = await fetch('/api/get-assessment-result', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assessmentId, clientToken }),
         });
-        if (fnError) {
-          setError(fnError.message ?? 'Failed to load results');
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setError(typeof data?.error === 'string' ? data.error : 'Failed to load results');
           setLoading(false);
           return;
         }

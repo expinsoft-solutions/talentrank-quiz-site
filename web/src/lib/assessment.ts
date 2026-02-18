@@ -33,13 +33,13 @@ export function getOrderedSectionSteps(
   options: GetOrderedSectionStepsOptions = {}
 ): SectionStep[] {
   const { excludeCognitive = true } = options;
-  const ordered = [...sections].sort((a, b) => a.order_index - b.order_index);
+  const ordered = [...sections].sort((a, b) => a.orderIndex - b.orderIndex);
   const filtered = excludeCognitive
     ? ordered.filter((s) => s.id !== COGNITIVE_SECTION_ID)
     : ordered;
 
   return filtered.map((section, index) => {
-    const sectionQuestions = questions.filter((q) => q.section_id === section.id);
+    const sectionQuestions = questions.filter((q) => q.sectionId === section.id);
     if (section.id === SHORT_ANSWER_SECTION_ID) {
       return {
         sectionId: section.id,
@@ -57,7 +57,7 @@ export function getOrderedSectionSteps(
       questions: sectionQuestions.map((q) => ({
         id: q.id,
         question: q.text,
-        keyed: (q.reverse_scored ? 'negative' : 'positive') as 'positive' | 'negative',
+        keyed: (q.reverseScored ? 'negative' : 'positive') as 'positive' | 'negative',
         ...(q.type !== 'likert' && q.options && q.options.length > 0 && { options: q.options }),
       })),
     } satisfies LikertSectionStep;

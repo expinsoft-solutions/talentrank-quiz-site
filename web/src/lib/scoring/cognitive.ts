@@ -8,21 +8,21 @@ export interface CognitiveScoreResult {
 }
 
 interface ResponseRow {
-  question_id: string;
-  answer_numeric: number | null;
+  questionId: string;
+  answerNumeric: number | null;
 }
 
 interface QuestionRow {
   id: string;
-  section_id: string;
-  correct_answer: string | null;
+  sectionId: string;
+  correctAnswer: string | null;
 }
 
 export function scoreCognitive(
   responses: ResponseRow[],
   questions: QuestionRow[]
 ): CognitiveScoreResult {
-  const sectionQuestions = questions.filter((q) => q.section_id === COGNITIVE_SECTION_ID);
+  const sectionQuestions = questions.filter((q) => q.sectionId === COGNITIVE_SECTION_ID);
   const totalQuestions = sectionQuestions.length;
   if (totalQuestions === 0) {
     return { rawScore: 0, correctCount: 0, totalQuestions: 0, iqPercentile: 0 };
@@ -32,11 +32,11 @@ export function scoreCognitive(
   let correctCount = 0;
 
   for (const r of responses) {
-    const q = questionMap.get(r.question_id);
-    if (!q?.correct_answer || r.answer_numeric == null) continue;
+    const q = questionMap.get(r.questionId);
+    if (!q?.correctAnswer || r.answerNumeric == null) continue;
 
-    const expected = Number(q.correct_answer);
-    if (!Number.isNaN(expected) && r.answer_numeric === expected) {
+    const expected = Number(q.correctAnswer);
+    if (!Number.isNaN(expected) && r.answerNumeric === expected) {
       correctCount += 1;
     }
   }

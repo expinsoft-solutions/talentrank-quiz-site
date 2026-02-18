@@ -75,6 +75,12 @@ Deno.serve(async (req) => {
       );
     }
 
+    const responsesOut = (responses ?? []).map((r: { question_id: string; answer_numeric: number | null; answer_raw: string | null }) => ({
+      questionId: r.question_id,
+      answerNumeric: r.answer_numeric,
+      answerRaw: r.answer_raw,
+    }));
+
     return new Response(
       JSON.stringify({
         assessmentId: assessmentRow.id,
@@ -82,7 +88,7 @@ Deno.serve(async (req) => {
         status: assessmentRow.status,
         sections,
         questions,
-        responses: responses ?? [],
+        responses: responsesOut,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

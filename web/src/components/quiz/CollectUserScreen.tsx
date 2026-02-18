@@ -4,16 +4,18 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/lib/supabase';
+import { setCompletedUserId } from '@/lib/user-id-storage';
 
 interface CollectUserScreenProps {
   assessmentId: string;
+  clientToken: string;
   device: 'desktop' | 'mobile' | 'tablet';
-  onSaved: (firstName?: string) => void;
+  onSaved: (firstName?: string, token?: string) => void;
 }
 
 export function CollectUserScreen({
   assessmentId,
+  clientToken,
   device,
   onSaved,
 }: CollectUserScreenProps) {
@@ -32,34 +34,30 @@ export function CollectUserScreen({
     }
     setLoading(true);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('update-assessment-user', {
-        body: {
+      const res = await fetch('/api/authorize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           assessmentId,
+          clientToken,
           email: trimmed,
           firstName: firstName.trim() || undefined,
           device,
-        },
+        }),
       });
-      if (fnError) {
-        // Prefer the Edge Function body message (e.g. "This email is already used...")
-        let message: string = fnError.message ?? 'Failed to save';
-        const res = (fnError as { context?: Response }).context;
-        if (res && typeof (res as Response).json === 'function') {
-          try {
-            const body = await (res as Response).json();
-            if (body?.error && typeof body.error === 'string') message = body.error;
-          } catch {
-            /* ignore parse errors */
-          }
-        }
-        setError(message);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(typeof data?.error === 'string' ? data.error : 'Failed to save');
         return;
       }
       if (data?.error) {
         setError(data.error);
         return;
       }
-      onSaved(firstName.trim() || undefined);
+      if (typeof data?.userId === 'string') {
+        setCompletedUserId(data.userId);
+      }
+      onSaved(firstName.trim() || undefined, typeof data?.token === 'string' ? data.token : undefined);
     } catch {
       setError('Network error');
     } finally {

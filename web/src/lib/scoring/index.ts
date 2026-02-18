@@ -16,19 +16,19 @@ export interface ScoreAssessmentOptions {
 }
 
 interface ResponseRow {
-  question_id: string;
-  answer_numeric: number | null;
-  time_taken_seconds: number | null;
+  questionId: string;
+  answerNumeric: number | null;
+  timeTakenSeconds: number | null;
 }
 
 interface QuestionRow {
   id: string;
-  section_id: string;
+  sectionId: string;
   type: string | null;
   dimension: string | null;
-  reverse_scored: boolean | null;
+  reverseScored: boolean | null;
   weight: number | null;
-  correct_answer: string | null;
+  correctAnswer: string | null;
 }
 
 export function scoreAssessment(

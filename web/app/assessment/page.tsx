@@ -11,11 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
 import { useDevice } from "@/hooks/use-device";
-import { supabase } from "@/lib/supabase";
 import { getOrderedSectionSteps, getFallbackSectionSteps } from "@/lib/assessment";
-import { getResumeCookie, setResumeCookie, clearResumeCookie } from "@/lib/resume-cookie";
+import { getResumeState, setResumeState, clearResumeState } from "@/lib/resume-storage";
 import { getVslConfig } from "@/lib/site-settings";
-import type { PersonalityAnswer, ResumeAssessmentResponse } from "@/types";
+import type { DbSection, DbQuestion, PersonalityAnswer } from "@/types";
 import type { SectionStep } from "@/lib/assessment";
 
 type Phase = "start" | "section" | "collect_user" | "complete" | "no_questions";
@@ -24,6 +23,8 @@ interface Session {
   assessmentId: string;
   sectionSteps: SectionStep[];
   clientToken: string;
+  sections: DbSection[];
+  questions: DbQuestion[];
 }
 
 export default function AssessmentPage() {
@@ -48,54 +49,29 @@ export default function AssessmentPage() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
+  const [scoringLoading, setScoringLoading] = useState(false);
   const reportFetchedRef = useRef(false);
 
   useEffect(() => {
-    const payload = getResumeCookie();
-    if (!payload?.assessmentId || !payload.clientToken) {
+    const stored = getResumeState();
+    if (!stored) {
       setResuming(false);
       return;
     }
-    (async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("resume-assessment", {
-          body: { assessmentId: payload.assessmentId, clientToken: payload.clientToken },
-        });
-        if (error || data?.error) {
-          clearResumeCookie();
-          setResuming(false);
-          return;
-        }
-        const res = data as ResumeAssessmentResponse;
-        if (res.status === "completed") {
-          clearResumeCookie();
-          setResuming(false);
-          return;
-        }
-        const sectionSteps = getOrderedSectionSteps(res.sections, res.questions, { excludeCognitive: true });
-        const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
-        const responsesMap: Record<string, { answerNumeric?: number; answerRaw?: string }> = {};
-        (res.responses ?? []).forEach((r) => {
-          responsesMap[r.question_id] = {
-            ...(r.answer_numeric != null && { answerNumeric: r.answer_numeric }),
-            ...(r.answer_raw != null && r.answer_raw !== "" && { answerRaw: r.answer_raw }),
-          };
-        });
-        setSession({
-          assessmentId: res.assessmentId,
-          sectionSteps: steps,
-          clientToken: res.clientToken,
-        });
-        setAssessmentResponses(responsesMap);
-        setPhase(payload.phase === "collect_user" ? "collect_user" : "section");
-        setCurrentSectionIndex(Math.min(payload.sectionIndex, Math.max(0, steps.length - 1)));
-        setQuestionIndex(Math.max(0, payload.questionIndex));
-      } catch {
-        clearResumeCookie();
-      } finally {
-        setResuming(false);
-      }
-    })();
+    const sectionSteps = getOrderedSectionSteps(stored.sections, stored.questions, { excludeCognitive: true });
+    const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
+    setSession({
+      assessmentId: stored.assessmentId,
+      sectionSteps: steps,
+      clientToken: stored.clientToken,
+      sections: stored.sections,
+      questions: stored.questions,
+    });
+    setAssessmentResponses(stored.responses);
+    setPhase(stored.phase === "collect_user" ? "collect_user" : "section");
+    setCurrentSectionIndex(Math.min(stored.sectionIndex, Math.max(0, steps.length - 1)));
+    setQuestionIndex(Math.max(0, stored.questionIndex));
+    setResuming(false);
   }, []);
 
   // Start is on landing page (/); direct visit to /assessment with no session → redirect to /
@@ -108,25 +84,41 @@ export default function AssessmentPage() {
   function handleSectionProgress(sectionIndex: number, qIndex: number) {
     setQuestionIndex(qIndex);
     if (session) {
-      setResumeCookie({
+      setResumeState({
         assessmentId: session.assessmentId,
         clientToken: session.clientToken,
         phase: "section",
         sectionIndex: currentSectionIndex,
         questionIndex: qIndex,
+        sections: session.sections,
+        questions: session.questions,
+        responses: assessmentResponses,
       });
     }
   }
 
   function handleResponseSaved(questionId: string, answerNumeric?: number, answerRaw?: string) {
-    setAssessmentResponses((prev) => ({
-      ...prev,
+    const updated = {
+      ...assessmentResponses,
       [questionId]: {
-        ...prev[questionId],
+        ...assessmentResponses[questionId],
         ...(answerNumeric != null && { answerNumeric }),
         ...(answerRaw != null && { answerRaw }),
       },
-    }));
+    };
+    setAssessmentResponses(updated);
+    if (session) {
+      setResumeState({
+        assessmentId: session.assessmentId,
+        clientToken: session.clientToken,
+        phase,
+        sectionIndex: currentSectionIndex,
+        questionIndex,
+        sections: session.sections,
+        questions: session.questions,
+        responses: updated,
+      });
+    }
   }
 
   function handleSectionComplete() {
@@ -135,12 +127,15 @@ export default function AssessmentPage() {
     if (next < session.sectionSteps.length) {
       setCurrentSectionIndex(next);
       setQuestionIndex(0);
-      setResumeCookie({
+      setResumeState({
         assessmentId: session.assessmentId,
         clientToken: session.clientToken,
         phase: "section",
         sectionIndex: next,
         questionIndex: 0,
+        sections: session.sections,
+        questions: session.questions,
+        responses: assessmentResponses,
       });
       return;
     }
@@ -153,26 +148,49 @@ export default function AssessmentPage() {
       setCurrentSectionIndex(prevSectionIndex);
       setQuestionIndex(0);
       if (session) {
-        setResumeCookie({
+        setResumeState({
           assessmentId: session.assessmentId,
           clientToken: session.clientToken,
           phase: "section",
           sectionIndex: prevSectionIndex,
           questionIndex: 0,
+          sections: session.sections,
+          questions: session.questions,
+          responses: assessmentResponses,
         });
       }
     }
   }
 
-  async function completeAssessmentAndGoToCollectUser() {
+  function completeAssessmentAndGoToCollectUser() {
     if (!session) return;
-    try {
-      const { data, error } = await supabase.functions.invoke("score-assessment", {
-        body: {
-          assessmentId: session.assessmentId,
-          clientToken: session.clientToken,
-        },
+    setPhase("collect_user");
+    if (session) {
+      setResumeState({
+        assessmentId: session.assessmentId,
+        clientToken: session.clientToken,
+        phase: "collect_user",
+        sectionIndex: currentSectionIndex,
+        questionIndex: 0,
+        sections: session.sections,
+        questions: session.questions,
+        responses: assessmentResponses,
       });
+    }
+  }
+
+  async function handleUserSaved(firstName?: string, token?: string) {
+    if (firstName) setUserFirstName(firstName);
+    if (!session || !token) return;
+    setScoringLoading(true);
+    try {
+      const res = await fetch("/api/submit-assessment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      const data = await res.json().catch(() => ({}));
+      const error = !res.ok ? (data?.error ?? "Failed to score") : null;
       if (!error && data) {
         setCompleteResult({
           mbti: data.mbti ?? "—",
@@ -194,26 +212,14 @@ export default function AssessmentPage() {
         axisStrengths: {},
         iqPercentile: 0,
       });
+    } finally {
+      setScoringLoading(false);
     }
-    setPhase("collect_user");
-    if (session) {
-      setResumeCookie({
-        assessmentId: session.assessmentId,
-        clientToken: session.clientToken,
-        phase: "collect_user",
-        sectionIndex: currentSectionIndex,
-        questionIndex: 0,
-      });
-    }
-  }
-
-  async function handleUserSaved(firstName?: string) {
-    if (firstName) setUserFirstName(firstName);
-    clearResumeCookie();
+    clearResumeState();
     const vsl = await getVslConfig();
     if (vsl.vsl_enabled && vsl.vsl_url?.trim()) {
-      const aid = session?.assessmentId;
-      const token = session?.clientToken;
+      const aid = session.assessmentId;
+      const token = session.clientToken;
       if (aid && token) {
         if (vsl.vsl_type === "external") {
           const base = vsl.vsl_url.replace(/\?.*$/, "");
@@ -234,13 +240,15 @@ export default function AssessmentPage() {
     reportFetchedRef.current = true;
     setReportLoading(true);
     setReportError(null);
-    supabase.functions
-      .invoke("generate-report", {
-        body: { assessmentId: session.assessmentId, clientToken: session.clientToken },
-      })
-      .then(({ data, error }) => {
-        if (error) {
-          setReportError(error.message ?? "Failed to load report");
+    fetch("/api/generate-report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assessmentId: session.assessmentId, clientToken: session.clientToken }),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setReportError(typeof data?.error === "string" ? data.error : "Failed to load report");
           return;
         }
         if (data?.error) {
@@ -362,10 +370,19 @@ export default function AssessmentPage() {
   }
 
   if (phase === "collect_user" && session) {
+    if (scoringLoading) {
+      return (
+        <div className="min-h-screen min-h-[100dvh] bg-background flex flex-col items-center justify-center gap-4 px-6 py-12">
+          <Loader size="lg" />
+          <p className="text-sm text-muted-foreground">Preparing your results…</p>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden">
         <CollectUserScreen
           assessmentId={session.assessmentId}
+          clientToken={session.clientToken}
           device={device}
           onSaved={handleUserSaved}
         />

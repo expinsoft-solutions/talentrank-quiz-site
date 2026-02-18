@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
 
     const { data: assessmentData, error: fetchError } = await supabase
       .from('assessment_attempts')
-      .select('user_id')
+      .select('user_id, version')
       .eq('id', assessmentId)
       .single();
 
@@ -74,6 +74,26 @@ Deno.serve(async (req) => {
       }
     }
 
+    const quizKey = typeof assessmentData?.version === 'string' ? assessmentData.version : 'v1.0';
+    const { data: existingRow } = await supabase
+      .from('user_quiz_attempt_counts')
+      .select('attempt_count')
+      .eq('user_id', userId)
+      .eq('quiz_key', quizKey)
+      .single();
+
+    const nextCount = (existingRow?.attempt_count ?? 0) + 1;
+    const { error: countError } = await supabase
+      .from('user_quiz_attempt_counts')
+      .upsert(
+        { user_id: userId, quiz_key: quizKey, attempt_count: nextCount, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id,quiz_key' }
+      );
+
+    if (countError) {
+      console.error('user_quiz_attempt_counts upsert error', countError);
+    }
+
     const { error: updateError } = await supabase
       .from('users')
       .update({
@@ -92,7 +112,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ ok: true }),
+      JSON.stringify({ ok: true, userId }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (e) {

@@ -9,11 +9,11 @@ import { Button } from '@/components/ui/button';
 interface Submission {
   id: string;
   status: string;
-  started_at: string;
-  completed_at: string | null;
+  startedAt: string;
+  completedAt: string | null;
   mbti: string | null;
-  cognitive_percentile: number | null;
-  user: { email?: string; first_name?: string };
+  cognitivePercentile: number | null;
+  user: { email?: string; firstName?: string };
 }
 
 export default function AdminSubmissionsPage() {
@@ -96,8 +96,8 @@ export default function AdminSubmissionsPage() {
                   className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30"
                 >
                   <td className="p-3 text-slate-600 dark:text-slate-400">
-                    {row.started_at
-                      ? format(new Date(row.started_at), 'MMM d, yyyy HH:mm')
+                    {row.startedAt
+                      ? format(new Date(row.startedAt), 'MMM d, yyyy HH:mm')
                       : '—'}
                   </td>
                   <td className="p-3">
@@ -115,7 +115,7 @@ export default function AdminSubmissionsPage() {
                     </span>
                   </td>
                   <td className="p-3 font-mono">{row.mbti ?? '—'}</td>
-                  <td className="p-3">{row.cognitive_percentile ?? '—'}</td>
+                  <td className="p-3">{row.cognitivePercentile ?? '—'}</td>
                   <td className="p-3">
                     <Link
                       href={`/admin/submissions/${row.id}`}

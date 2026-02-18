@@ -9,20 +9,20 @@ import { ArrowLeft, Loader } from 'lucide-react';
 interface Attempt {
   id: string;
   status: string;
-  started_at: string;
-  completed_at: string | null;
+  startedAt: string;
+  completedAt: string | null;
   mbti: string | null;
-  axis_strengths: Record<string, number> | null;
-  cognitive_percentile: number | null;
-  neuroticism_score: number | null;
-  report_text: string | null;
+  axisStrengths: Record<string, number> | null;
+  cognitivePercentile: number | null;
+  neuroticismScore: number | null;
+  reportText: string | null;
 }
 
 interface ResponseRow {
-  question_id: string;
-  answer_numeric: number | null;
-  answer_raw: string | null;
-  time_taken_seconds: number | null;
+  questionId: string;
+  answerNumeric: number | null;
+  answerRaw: string | null;
+  timeTakenSeconds: number | null;
 }
 
 export default function AdminSubmissionDetailPage() {
@@ -57,8 +57,8 @@ export default function AdminSubmissionDetailPage() {
     );
   }
 
-  const axisEntries = attempt.axis_strengths
-    ? Object.entries(attempt.axis_strengths).sort(([a], [b]) => a.localeCompare(b))
+  const axisEntries = attempt.axisStrengths
+    ? Object.entries(attempt.axisStrengths).sort(([a], [b]) => a.localeCompare(b))
     : [];
 
   return (
@@ -80,7 +80,7 @@ export default function AdminSubmissionDetailPage() {
           </div>
           <div>
             <span className="text-slate-500 block">Name</span>
-            <span>{(user.first_name as string) ?? '—'}</span>
+            <span>{(user.firstName as string) ?? '—'}</span>
           </div>
           <div>
             <span className="text-slate-500 block">Status</span>
@@ -97,16 +97,16 @@ export default function AdminSubmissionDetailPage() {
           <div>
             <span className="text-slate-500 block">Started</span>
             <span>
-              {attempt.started_at
-                ? format(new Date(attempt.started_at), 'PPpp')
+              {attempt.startedAt
+                ? format(new Date(attempt.startedAt), 'PPpp')
                 : '—'}
             </span>
           </div>
           <div>
             <span className="text-slate-500 block">Completed</span>
             <span>
-              {attempt.completed_at
-                ? format(new Date(attempt.completed_at), 'PPpp')
+              {attempt.completedAt
+                ? format(new Date(attempt.completedAt), 'PPpp')
                 : '—'}
             </span>
           </div>
@@ -121,12 +121,12 @@ export default function AdminSubmissionDetailPage() {
               </div>
               <div>
                 <span className="text-slate-500 text-sm block">IQ Percentile</span>
-                <span>{attempt.cognitive_percentile ?? '—'}</span>
+                <span>{attempt.cognitivePercentile ?? '—'}</span>
               </div>
-              {attempt.neuroticism_score != null && (
+              {attempt.neuroticismScore != null && (
                 <div>
                   <span className="text-slate-500 text-sm block">Neuroticism</span>
-                  <span>{attempt.neuroticism_score}</span>
+                  <span>{attempt.neuroticismScore}</span>
                 </div>
               )}
             </div>
@@ -147,11 +147,11 @@ export default function AdminSubmissionDetailPage() {
                 </div>
               </div>
             )}
-            {attempt.report_text && (
+            {attempt.reportText && (
               <div className="pt-4">
                 <span className="text-slate-500 text-sm block mb-2">Report</span>
                 <div className="rounded bg-slate-50 dark:bg-slate-800/50 p-4 text-sm whitespace-pre-wrap">
-                  {attempt.report_text}
+                  {attempt.reportText}
                 </div>
               </div>
             )}
@@ -166,22 +166,22 @@ export default function AdminSubmissionDetailPage() {
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
           {responses.map((r) => (
             <div
-              key={r.question_id}
+              key={r.questionId}
               className="p-4 flex justify-between gap-4 items-start"
             >
               <span className="font-mono text-xs text-slate-500 shrink-0">
-                {r.question_id}
+                {r.questionId}
               </span>
               <div className="min-w-0 flex-1 text-right">
-                {r.answer_numeric != null && (
-                  <span className="font-medium">{r.answer_numeric}</span>
+                {r.answerNumeric != null && (
+                  <span className="font-medium">{r.answerNumeric}</span>
                 )}
-                {r.answer_raw && (
+                {r.answerRaw && (
                   <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 truncate max-w-md ml-auto">
-                    {r.answer_raw}
+                    {r.answerRaw}
                   </p>
                 )}
-                {r.answer_numeric == null && !r.answer_raw && (
+                {r.answerNumeric == null && !r.answerRaw && (
                   <span className="text-slate-400">—</span>
                 )}
               </div>

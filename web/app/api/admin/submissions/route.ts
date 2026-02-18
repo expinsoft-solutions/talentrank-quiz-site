@@ -57,16 +57,31 @@ export async function GET(request: Request) {
   }
 
   const userIds = [...new Set((attempts ?? []).map((a: { user_id: string }) => a.user_id).filter(Boolean))];
-  let userMap: Record<string, { email?: string; first_name?: string; device?: string }> = {};
+  let userMap: Record<string, { email?: string; firstName?: string; device?: string }> = {};
   if (userIds.length > 0) {
     const { data: users } = await supabase.from('users').select('id, email, first_name, device').in('id', userIds);
-    userMap = Object.fromEntries((users ?? []).map((u: { id: string }) => [u.id, u]));
+    userMap = Object.fromEntries(
+      (users ?? []).map((u: { id: string; email?: string; first_name?: string; device?: string }) => [
+        u.id,
+        { email: u.email, firstName: u.first_name, device: u.device },
+      ])
+    );
   }
 
-  const items = (attempts ?? []).map((row: Record<string, unknown>) => ({
-    ...row,
-    user: userMap[(row.user_id as string) ?? ''] ?? {},
-  }));
+  const items = (attempts ?? []).map((row: Record<string, unknown>) => {
+    const u = userMap[(row.user_id as string) ?? ''] ?? {};
+    return {
+      id: row.id,
+      status: row.status,
+      startedAt: row.started_at,
+      completedAt: row.completed_at,
+      mbti: row.mbti,
+      axisStrengths: row.axis_strengths,
+      cognitivePercentile: row.cognitive_percentile,
+      reportText: row.report_text,
+      user: u,
+    };
+  });
 
   return NextResponse.json({ items, total: count ?? 0 });
 }

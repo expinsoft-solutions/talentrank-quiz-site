@@ -66,11 +66,17 @@ Deno.serve(async (req) => {
       .select('question_id, answer_numeric, time_taken_seconds')
       .eq('assessment_id', assessmentId);
 
+    const responsesOut = (responses ?? []).map((r: { question_id: string; answer_numeric: number | null; time_taken_seconds: number | null }) => ({
+      questionId: r.question_id,
+      answerNumeric: r.answer_numeric,
+      timeTakenSeconds: r.time_taken_seconds,
+    }));
+
     const totalTimeSeconds =
-      (responses ?? []).reduce((sum, r) => sum + (r.time_taken_seconds ?? 0), 0);
+      responsesOut.reduce((sum, r) => sum + (r.timeTakenSeconds ?? 0), 0);
     const completedAt = new Date().toISOString();
 
-    const result = scoreAssessment(responses ?? [], questions ?? [], {
+    const result = scoreAssessment(responsesOut, questions ?? [], {
       personalityScalePoints: 5,
     });
 

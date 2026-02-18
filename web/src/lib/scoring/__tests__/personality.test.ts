@@ -4,11 +4,11 @@ import { scorePersonality } from '../personality';
 const SECTION = 'personality_wiring';
 
 function q(id: string, dimension: string, reverse = false, weight = 1) {
-  return { id, section_id: SECTION, type: 'likert', dimension, reverse_scored: reverse, weight, correct_answer: null };
+  return { id, sectionId: SECTION, type: 'likert', dimension, reverseScored: reverse, weight, correctAnswer: null };
 }
 
 function r(questionId: string, value: number) {
-  return { question_id: questionId, answer_numeric: value, time_taken_seconds: null };
+  return { questionId, answerNumeric: value, timeTakenSeconds: null };
 }
 
 describe('scorePersonality', () => {
@@ -108,7 +108,7 @@ describe('scorePersonality', () => {
   it('ignores non-personality_wiring questions', () => {
     const questions = [
       q('e1', 'EI'),
-      { ...q('x1', 'EI'), section_id: 'other_section', id: 'x1' },
+      { ...q('x1', 'EI'), sectionId: 'other_section', id: 'x1' },
     ];
     const responses = [r('e1', 7), r('x1', 1)];
     const result = scorePersonality(responses, questions, { scalePoints: 7 });

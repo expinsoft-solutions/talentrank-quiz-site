@@ -22,21 +22,21 @@ export interface CognitiveSectionResult {
 
 export interface AssessmentSubmissionUser {
   email: string;
-  first_name: string;
+  firstName: string;
   device: 'desktop' | 'mobile' | 'tablet';
 }
 
 export interface AssessmentSubmissionAssessment {
   version: string;
-  started_at: string;
-  completed_at: string;
+  startedAt: string;
+  completedAt: string;
 }
 
 export interface AssessmentSubmissionResponse {
-  question_id: string;
+  questionId: string;
   section: 'personality' | 'cognitive';
   answer: number;
-  time_taken: number | null;
+  timeTaken: number | null;
 }
 
 export interface AssessmentSubmission {
@@ -54,21 +54,21 @@ export interface StartAssessmentRequest {
 export interface DbSection {
   id: string;
   name: string;
-  order_index: number;
+  orderIndex: number;
   isTimed: boolean | null;
-  time_limit_seconds: number | null;
+  timeLimitSeconds: number | null;
   purpose: string | null;
 }
 
 export interface DbQuestion {
   id: string;
-  section_id: string;
+  sectionId: string;
   text: string;
   type: string;
   dimension: string | null;
-  reverse_scored: boolean | null;
+  reverseScored: boolean | null;
   weight: number | null;
-  correct_answer: string | null;
+  correctAnswer: string | null;
   active: boolean | null;
   options?: string[] | null;
 }
@@ -81,9 +81,9 @@ export interface StartAssessmentResponse {
 }
 
 export interface ResumeResponseRow {
-  question_id: string;
-  answer_numeric: number | null;
-  answer_raw: string | null;
+  questionId: string;
+  answerNumeric: number | null;
+  answerRaw: string | null;
 }
 
 export interface ResumeAssessmentResponse {

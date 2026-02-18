@@ -1,55 +1,9 @@
-/**
- * Parse questionnaire JSON (from assessments table (questionnaire definition)) into sections and questions
- * in the shape expected by the API and scoring (DbSection[], DbQuestion[]).
- */
+import type { DbSection, DbQuestion } from '@/types/assessment';
 
-export interface QuestionnaireSection {
-  id: string;
-  name: string;
-  order_index: number;
-  isTimed?: boolean;
-  time_limit_seconds?: number | null;
-  purpose?: string | null;
-  questions: QuestionnaireQuestion[];
-}
-
-export interface QuestionnaireQuestion {
-  id: string;
-  text?: string;
-  statement?: string;
-  type: string;
-  dimension?: string | null;
-  reverse_scored?: boolean;
-  reverseScored?: boolean;
-  weight?: number | null;
-  correct_answer?: string | null;
-  active?: boolean;
-  options?: string[];
-}
-
-export interface DbSection {
-  id: string;
-  name: string;
-  orderIndex: number;
-  isTimed: boolean | null;
-  timeLimitSeconds: number | null;
-  purpose: string | null;
-}
-
-export interface DbQuestion {
-  id: string;
-  sectionId: string;
-  text: string;
-  type: string;
-  dimension: string | null;
-  reverseScored: boolean | null;
-  weight: number | null;
-  correctAnswer: string | null;
-  active: boolean | null;
-  options: string[] | null;
-}
-
-export function parseQuestionnaire(questionnaire: unknown): { sections: DbSection[]; questions: DbQuestion[] } {
+export function parseQuestionnaire(questionnaire: unknown): {
+  sections: DbSection[];
+  questions: DbQuestion[];
+} {
   const sections: DbSection[] = [];
   const questions: DbQuestion[] = [];
   if (!Array.isArray(questionnaire)) return { sections, questions };
