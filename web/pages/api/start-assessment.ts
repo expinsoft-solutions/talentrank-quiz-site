@@ -50,7 +50,7 @@ export default async function handler(
       userData = inserted;
     }
 
-    if (userError || !userData?.id) {
+    if (!userData?.id) {
       return res.status(500).json({ error: 'Failed to create user' });
     }
 

@@ -65,6 +65,7 @@ function VslContent() {
       containerRef.current.appendChild(div);
       playerRef.current = new window.YT!.Player('yt-player', {
         videoId,
+        // @ts-expect-error playerVars is valid YouTube API but types are incomplete
         playerVars: {
           autoplay: 1,
           mute: 1,

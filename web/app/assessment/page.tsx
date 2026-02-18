@@ -111,7 +111,7 @@ export default function AssessmentPage() {
       setResumeState({
         assessmentId: session.assessmentId,
         clientToken: session.clientToken,
-        phase,
+        phase: phase === "collect_user" ? "collect_user" : "section",
         sectionIndex: currentSectionIndex,
         questionIndex,
         sections: session.sections,

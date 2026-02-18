@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { ResultView } from '@/components/quiz';
@@ -93,7 +94,7 @@ function ResultPageContent() {
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
         <h1 className="text-xl font-semibold text-foreground mb-2">Unable to load results</h1>
         <p className="text-sm text-muted-foreground mb-4">{error ?? 'Unknown error'}</p>
-        <a href="/" className="text-sm text-indigo-600 hover:underline">Return home</a>
+        <Link href="/" className="text-sm text-indigo-600 hover:underline">Return home</Link>
       </div>
     );
   }

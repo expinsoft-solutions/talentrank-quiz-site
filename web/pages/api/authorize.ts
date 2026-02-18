@@ -13,7 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   const assessmentId = body.assessmentId;
   const clientToken = body.clientToken;
-  const userId = typeof data?.userId === 'string' ? data.userId : null;
+  const d = data as Record<string, unknown> | undefined;
+  const userId = typeof d?.userId === 'string' ? d.userId : null;
   if (userId && typeof assessmentId === 'string' && typeof clientToken === 'string') {
     const token = createAssessmentToken({ assessmentId, clientToken, userId });
     return res.status(200).json({ userId, token });
