@@ -8,7 +8,6 @@ import {
   type PersonalityQuestion,
   LIKERT_SCALE_POINTS,
   getLikertLabelsForQuestion,
-  getLikertAnchorsForQuestion,
 } from '@/data/personalityQuestions';
 import { shuffleArrayWithSeed } from '@/lib/array';
 import { supabase } from '@/lib/supabase';
@@ -250,14 +249,14 @@ export function LikertSection({
                 </div>
                 <div className="flex items-center gap-3 sm:gap-4 w-full min-w-0 pt-1">
                   <span className="text-xs text-muted-foreground shrink-0 w-12 sm:w-16 text-left leading-relaxed">
-                    {getLikertAnchorsForQuestion(sectionId, currentQuestion.id).left}
+                    {(currentQuestion.options ?? getLikertLabelsForQuestion(sectionId, currentQuestion.id))[0]}
                   </span>
                   <div className="flex-1 flex items-center justify-between gap-2 sm:gap-3 min-w-0">
                     {Array.from({ length: LIKERT_SCALE_POINTS }, (_, i) => {
                       const value = i + 1;
                       const selected = currentAnswer === value;
                       const hover = hoveredScale?.questionId === currentQuestion.id && hoveredScale?.value === value;
-                      const labels = getLikertLabelsForQuestion(sectionId, currentQuestion.id);
+                      const labels = currentQuestion.options ?? getLikertLabelsForQuestion(sectionId, currentQuestion.id);
                       return (
                         <Tooltip key={value}>
                           <TooltipTrigger asChild>
@@ -289,7 +288,7 @@ export function LikertSection({
                     })}
                   </div>
                   <span className="text-xs text-muted-foreground shrink-0 w-12 sm:w-20 text-right leading-relaxed">
-                    {getLikertAnchorsForQuestion(sectionId, currentQuestion.id).right}
+                    {(currentQuestion.options ?? getLikertLabelsForQuestion(sectionId, currentQuestion.id))[LIKERT_SCALE_POINTS - 1]}
                   </span>
                 </div>
               </CardContent>

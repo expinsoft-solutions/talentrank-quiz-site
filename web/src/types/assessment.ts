@@ -55,7 +55,7 @@ export interface DbSection {
   id: string;
   name: string;
   order_index: number;
-  is_timed: boolean | null;
+  isTimed: boolean | null;
   time_limit_seconds: number | null;
   purpose: string | null;
 }
@@ -70,6 +70,7 @@ export interface DbQuestion {
   weight: number | null;
   correct_answer: string | null;
   active: boolean | null;
+  options?: string[] | null;
 }
 
 export interface StartAssessmentResponse {

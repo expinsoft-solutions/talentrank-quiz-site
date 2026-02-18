@@ -2,19 +2,19 @@ import { scorePersonality, type LikertScalePoints } from './personality.ts';
 import { scoreCognitive } from './cognitive.ts';
 import { scoreSubscales } from './subscales.ts';
 
-interface ResponseRow {
-  question_id: string;
-  answer_numeric: number | null;
-  time_taken_seconds: number | null;
+interface Response {
+  questionId: string;
+  answerIndex: number | null;
+  timeTakenInSeconds: number | null;
 }
-interface QuestionRow {
+interface Question {
   id: string;
   section_id: string;
   type: string | null;
   dimension: string | null;
-  reverse_scored: boolean | null;
+  reverseScored: boolean | null;
   weight: number | null;
-  correct_answer: string | null;
+  options: string | null;
 }
 
 export interface ScoreAssessmentResult {
@@ -27,8 +27,8 @@ export interface ScoreAssessmentResult {
 }
 
 export function scoreAssessment(
-  responses: ResponseRow[],
-  questions: QuestionRow[],
+  responses: Response[],
+  questions: Question[],
   options: { personalityScalePoints?: LikertScalePoints } = {}
 ): ScoreAssessmentResult {
   const personality = scorePersonality(responses, questions, {

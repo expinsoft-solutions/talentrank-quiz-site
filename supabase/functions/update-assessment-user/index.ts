@@ -51,6 +51,29 @@ Deno.serve(async (req) => {
     const first_name = typeof firstName === 'string' ? firstName.trim() || null : null;
     const deviceVal = typeof device === 'string' ? device : null;
 
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .single();
+
+    const userId = existingUser?.id ?? assessmentData.user_id;
+
+    if (existingUser?.id && existingUser.id !== assessmentData.user_id) {
+      const { error: updateAttemptError } = await supabase
+        .from('assessment_attempts')
+        .update({ user_id: existingUser.id })
+        .eq('id', assessmentId);
+
+      if (updateAttemptError) {
+        console.error('assessment_attempts update error', updateAttemptError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to save user details' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     const { error: updateError } = await supabase
       .from('users')
       .update({
@@ -58,21 +81,13 @@ Deno.serve(async (req) => {
         first_name: first_name,
         device: deviceVal,
       })
-      .eq('id', assessmentData.user_id);
+      .eq('id', userId);
 
     if (updateError) {
       console.error('users update error', updateError);
-      const isEmailTaken = updateError.code === '23505';
       return new Response(
-        JSON.stringify({
-          error: isEmailTaken
-            ? 'This email is already used for another assessment.'
-            : 'Failed to save user details',
-        }),
-        {
-          status: isEmailTaken ? 409 : 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+        JSON.stringify({ error: 'Failed to save user details' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 

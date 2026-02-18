@@ -4,6 +4,7 @@ export interface PersonalityQuestion {
   id: string;
   question: string;
   keyed: PersonalityKeyed;
+  options?: readonly string[];
 }
 
 export const LIKERT_SCALE_POINTS = 5;
