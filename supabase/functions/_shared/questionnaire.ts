@@ -70,9 +70,11 @@ export function parseQuestionnaire(questionnaire: unknown): { sections: DbSectio
       const active = q.active !== false;
       const textVal = q.statement ?? q.text;
       const reverseScoredVal = q.reverseScored ?? q.reverse_scored;
-      const optionsVal = Array.isArray(q.options)
-        ? (q.options as unknown[]).map((o) => String(o)).filter(Boolean)
-        : null;
+      const qType = typeof q.type === 'string' ? q.type : 'likert';
+      const optionsVal =
+        qType !== 'likert' && Array.isArray(q.options)
+          ? (q.options as unknown[]).map((o) => String(o)).filter(Boolean)
+          : null;
       questions.push({
         id: typeof q.id === 'string' ? q.id : String(q.id),
         section_id: sectionId,

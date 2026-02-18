@@ -13,7 +13,8 @@
     "supabase:stop": "npx supabase stop",
     "supabase:functions:serve": "npx supabase functions serve",
     "supabase:functions:deploy": "npx supabase functions deploy",
-    "supabase:db:push": "npx supabase db push"
+    "supabase:db:push": "npx supabase db push",
+    "admin:create-first": "cd web && npm run admin:create-first"
   },
   "devDependencies": {
     "supabase": "^2.0.0"

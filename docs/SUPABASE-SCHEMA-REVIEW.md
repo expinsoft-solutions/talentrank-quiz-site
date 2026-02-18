@@ -10,7 +10,7 @@ Your schema aligns well with the assessment flow and the submission payload. Bel
 |-------|------|
 | **users** | `email`, `first_name`, `device` match the payload. `id` for linking. |
 | **assessments** | `version`, `started_at`, `completed_at`, `status` fit. `total_time_seconds` for cognitive time; `raw_payload` for full JSON. `user_id` FK to users is correct. |
-| **sections** | Good for personality vs cognitive. `order_index`, `is_timed`, `time_limit_seconds` support section config. |
+| **sections** | Good for personality vs cognitive. `order_index`, `isTimed`, `time_limit_seconds` support section config. |
 | **questions** | `section_id` → sections, `type` (likert/mcq/text), `reverse_scored` for personality keying, `correct_answer` for cognitive scoring. |
 | **responses** | `assessment_id`, `question_id`, `answer_numeric`, `time_taken_seconds` match. `answer_raw` for text; `is_correct` for cognitive. |
 

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { FileQuestion, LayoutList, LogOut } from 'lucide-react';
+import { FileQuestion, LayoutList, LogOut, Settings } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -74,6 +74,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <LayoutList className="w-4 h-4" />
             Submissions
           </Link>
+          <Link
+            href="/admin/settings"
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              pathname === '/admin/settings'
+                ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Settings className="w-4 h-4" />
+            Settings
+          </Link>
         </nav>
         <div className="p-2 border-t border-slate-200 dark:border-slate-800">
           <Button
@@ -91,7 +102,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto p-6">{children}</main>
+      <main className="flex-1 overflow-auto p-6">
+        <div className="max-w-6xl mx-auto">{children}</div>
+      </main>
     </div>
   );
 }

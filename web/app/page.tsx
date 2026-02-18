@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { getResumeCookie, setResumeCookie, clearResumeCookie } from '@/lib/resume-cookie';
 import { getOrderedSectionSteps, getFallbackSectionSteps } from '@/lib/assessment';
-import { supabase } from '@/lib/supabase';
 import type { StartAssessmentResponse } from '@/types';
 
 export default function Home() {
@@ -26,11 +25,10 @@ export default function Home() {
     setError(null);
     setLoading(true);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('start-assessment', {
-        body: {},
-      });
-      if (fnError) {
-        setError(fnError.message ?? 'Failed to start assessment');
+      const response = await fetch('/api/start-assessment', { method: 'POST' });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error ?? 'Failed to start assessment');
         setLoading(false);
         return;
       }

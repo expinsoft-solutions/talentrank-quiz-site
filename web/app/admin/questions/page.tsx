@@ -96,7 +96,7 @@ export default function AdminQuestionsPage() {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="w-full max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Question Bank</h1>
         <Button onClick={handleSave} disabled={saving}>
@@ -167,59 +167,123 @@ export default function AdminQuestionsPage() {
                     >
                       <button
                         type="button"
-                        className="w-full flex items-center justify-between text-left"
+                        className="w-full flex items-center justify-between gap-4 text-left"
                         onClick={() =>
                           setEditingQuestion(
                             editingQuestion === q.id ? null : q.id
                           )
                         }
                       >
-                        <span className="font-mono text-xs text-slate-500">
+                        <span className="font-mono text-xs text-slate-500 shrink-0">
                           {q.id}
                         </span>
-                        <span className="text-sm truncate max-w-md">
-                          {(q.statement ?? q.text ?? '').slice(0, 60)}…
+                        <span className="text-sm truncate min-w-0 flex-1">
+                          {(q.statement ?? q.text ?? '').slice(0, 80)}
+                          {(q.statement ?? q.text ?? '').length > 80 ? '…' : ''}
                         </span>
-                        <span>{editingQuestion === q.id ? '−' : '+'}</span>
+                        <span className="shrink-0">{editingQuestion === q.id ? '−' : '+'}</span>
                       </button>
 
                       {editingQuestion === q.id && (
-                        <div className="pt-2 space-y-2 text-sm">
-                          <div>
-                            <label className="text-xs text-slate-500 block mb-1">
-                              Statement
-                            </label>
-                            <textarea
-                              value={q.statement ?? q.text ?? ''}
-                              onChange={(e) =>
-                                updateQuestion(section.id, q.id, {
-                                  statement: e.target.value,
-                                  text: e.target.value,
-                                })
-                              }
-                              rows={2}
-                              className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
-                            />
-                          </div>
-                          {q.type === 'likert' && (
+                        <div className="pt-2 space-y-3 text-sm">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <label className="text-xs text-slate-500 block mb-1">
-                                Options (comma-separated)
+                                Type
                               </label>
-                              <input
-                                type="text"
-                                value={(q.options ?? []).join(', ')}
+                              <select
+                              value={q.type ?? 'likert'}
+                              onChange={(e) => {
+                                const newType = e.target.value;
+                                const baseOpts = q.options ?? [];
+                                const opts =
+                                  newType === 'mcq'
+                                    ? [...baseOpts, '', '', ''].slice(0, 4)
+                                    : newType === 'binary'
+                                      ? [...baseOpts, ''].slice(0, 2)
+                                      : [];
+                                updateQuestion(section.id, q.id, {
+                                  type: newType,
+                                  options: newType === 'likert' || newType === 'text' ? [] : opts,
+                                });
+                              }}
+                              className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
+                            >
+                              <option value="likert">Likert</option>
+                              <option value="text">Text</option>
+                              <option value="mcq">MCQ (4 options)</option>
+                              <option value="binary">Binary (2 options)</option>
+                            </select>
+                            </div>
+                            <div className="md:col-span-2">
+                              <label className="text-xs text-slate-500 block mb-1">
+                                Statement
+                              </label>
+                              <textarea
+                                value={q.statement ?? q.text ?? ''}
                                 onChange={(e) =>
                                   updateQuestion(section.id, q.id, {
-                                    options: e.target.value
-                                      .split(',')
-                                      .map((s) => s.trim())
-                                      .filter(Boolean),
+                                    statement: e.target.value,
+                                    text: e.target.value,
                                   })
                                 }
-                                placeholder="Very Inaccurate, Moderately Inaccurate, ..."
+                                rows={2}
                                 className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
                               />
+                            </div>
+                          </div>
+                          {q.type === 'mcq' && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              {[0, 1, 2, 3].map((i) => {
+                              const opts = [...(q.options ?? []), '', '', ''].slice(0, 4);
+                              return (
+                                <div key={i}>
+                                  <label className="text-xs text-slate-500 block mb-1">
+                                    Option {i + 1}
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={opts[i] ?? ''}
+                                    onChange={(e) => {
+                                      const newOpts = [...opts];
+                                      newOpts[i] = e.target.value;
+                                      updateQuestion(section.id, q.id, {
+                                        options: newOpts,
+                                      });
+                                    }}
+                                    placeholder={`Option ${i + 1}`}
+                                    className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
+                                  />
+                                </div>
+                              );
+                              })}
+                            </div>
+                          )}
+                          {q.type === 'binary' && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              {[0, 1].map((i) => {
+                              const opts = [...(q.options ?? []), ''].slice(0, 2);
+                              return (
+                                <div key={i}>
+                                  <label className="text-xs text-slate-500 block mb-1">
+                                    Option {i + 1}
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={opts[i] ?? ''}
+                                    onChange={(e) => {
+                                      const newOpts = [...opts];
+                                      newOpts[i] = e.target.value;
+                                      updateQuestion(section.id, q.id, {
+                                        options: newOpts,
+                                      });
+                                    }}
+                                    placeholder={i === 0 ? 'Yes / True' : 'No / False'}
+                                    className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
+                                  />
+                                </div>
+                              );
+                              })}
                             </div>
                           )}
                           <div className="flex items-center gap-4">

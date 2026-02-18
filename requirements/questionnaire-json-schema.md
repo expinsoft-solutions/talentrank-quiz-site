@@ -49,22 +49,25 @@ Answers are stored in the `responses` table (per-question).
   "id": "personality_wiring",
   "name": "Personality Wiring",
   "order_index": 1,
-  "is_timed": false,
+  "isTimed": false,
   "time_limit_seconds": null,
   "purpose": "Big Five → MBTI-style type",
   "questions": [
     {
       "id": "P1",
-      "text": "I am the life of the party.",
+      "statement": "I am the life of the party.",
       "type": "likert",
       "dimension": "EI",
-      "reverse_scored": false,
+      "reverseScored": false,
       "weight": 1,
       "correct_answer": null,
-      "active": true
+      "active": true,
+      "options": ["Very Inaccurate", "Moderately Inaccurate", "Neutral", "Moderately Accurate", "Very Accurate"]
     }
   ]
 }
 ```
+
+Question fields: `statement` (or legacy `text`), `reverseScored` (or legacy `reverse_scored`), `options` (array of scale labels for likert; optional, falls back to section defaults).
 
 You can extend this (e.g. add `options` for MCQ, or different types) without changing the DB schema. The app and edge functions read only from this JSON. The legacy `sections` and `questions` tables have been removed; the questionnaire in `assessments` is the single source of truth.

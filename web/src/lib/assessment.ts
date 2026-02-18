@@ -58,7 +58,7 @@ export function getOrderedSectionSteps(
         id: q.id,
         question: q.text,
         keyed: (q.reverse_scored ? 'negative' : 'positive') as 'positive' | 'negative',
-        ...(q.options && q.options.length > 0 && { options: q.options }),
+        ...(q.type !== 'likert' && q.options && q.options.length > 0 && { options: q.options }),
       })),
     } satisfies LikertSectionStep;
   });
