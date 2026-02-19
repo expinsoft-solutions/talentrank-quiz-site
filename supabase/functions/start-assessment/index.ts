@@ -1,22 +1,17 @@
-import { createClient } from 'npm:@supabase/supabase-js@2';
-import { parseQuestionnaire } from '../_shared/questionnaire.ts';
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const QUESTIONNAIRE_VERSION = 'v1.0';
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
-
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  return new Response(
+    JSON.stringify({ error: 'Gone', message: 'Use GET /api/quiz for questionnaire.' }),
+    { status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+});
 
     const { data: userData, error: userError } = await supabase
       .from('users')

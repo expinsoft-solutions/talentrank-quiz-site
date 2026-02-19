@@ -45,10 +45,10 @@ export interface AssessmentSubmission {
   responses: AssessmentSubmissionResponse[];
 }
 
-export interface StartAssessmentRequest {
-  email: string;
-  firstName?: string;
-  device?: string;
+export interface QuizResponse {
+  version: string;
+  sections: DbSection[];
+  questions: DbQuestion[];
 }
 
 export interface DbSection {
@@ -71,13 +71,6 @@ export interface DbQuestion {
   correctAnswer: string | null;
   active: boolean | null;
   options?: string[] | null;
-}
-
-export interface StartAssessmentResponse {
-  assessmentId: string;
-  sections: DbSection[];
-  questions: DbQuestion[];
-  clientToken: string;
 }
 
 export interface ResumeResponseRow {

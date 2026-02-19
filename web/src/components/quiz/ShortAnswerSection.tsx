@@ -4,46 +4,14 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/lib/supabase';
 
 interface ShortAnswerQuestion {
   id: string;
   question: string;
 }
 
-async function submitResponse(
-  assessmentId: string,
-  clientToken: string,
-  questionId: string,
-  answerRaw: string
-): Promise<boolean> {
-  try {
-    const { error } = await supabase
-      .from('responses')
-      .upsert(
-        {
-          assessment_id: assessmentId,
-          client_token: clientToken,
-          question_id: questionId,
-          answer_raw: answerRaw,
-          answer_numeric: null,
-          time_taken_seconds: null,
-        },
-        { onConflict: 'assessment_id,question_id' },
-      );
-    if (error) {
-      console.error('short-answer submitResponse error', error);
-      return false;
-    }
-    return true;
-  } catch (e) {
-    console.error('short-answer submitResponse error', e);
-    return false;
-  }
-}
-
 interface ShortAnswerSectionProps {
-  assessmentId: string;
+  assessmentId?: string | null;
   clientToken?: string | null;
   questions: ShortAnswerQuestion[];
   sectionIndex: number;
@@ -101,25 +69,21 @@ export function ShortAnswerSection({
 
   const flushCurrent = (questionId: string) => {
     const raw = (values[questionId] ?? '').trim();
-    if (raw && !submitted.has(questionId) && clientToken) {
+    if (raw && !submitted.has(questionId)) {
       onResponseSaved?.(questionId, raw);
-      submitResponse(assessmentId, clientToken, questionId, raw).then(() => {
-        setSubmitted((prev) => new Set(prev).add(questionId));
-      });
+      setSubmitted((prev) => new Set(prev).add(questionId));
     }
   };
 
   const handleNext = () => {
     if (currentQuestion) flushCurrent(currentQuestion.id);
     if (isLastQuestion) {
-      if (clientToken) {
-        questions.forEach((q) => {
-          const raw = (values[q.id] ?? '').trim();
-          if (raw && !submitted.has(q.id)) {
-            submitResponse(assessmentId, clientToken, q.id, raw);
-          }
-        });
-      }
+      questions.forEach((q) => {
+        const raw = (values[q.id] ?? '').trim();
+        if (raw && !submitted.has(q.id)) {
+          onResponseSaved?.(q.id, raw);
+        }
+      });
       onComplete();
     } else {
       const next = currentIndex + 1;

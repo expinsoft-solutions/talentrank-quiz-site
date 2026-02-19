@@ -10,7 +10,6 @@ import {
   getLikertLabelsForQuestion,
 } from '@/data/personalityQuestions';
 import { shuffleArrayWithSeed } from '@/lib/array';
-import { supabase } from '@/lib/supabase';
 import type { PersonalityAnswer } from '@/types';
 
 function randomizedAlternating(questions: PersonalityQuestion[], seed: string): PersonalityQuestion[] {
@@ -63,35 +62,6 @@ interface LikertSectionProps {
   onResponseSaved?: (questionId: string, answerNumeric: number) => void;
   isFirstSection?: boolean;
   isLastSection?: boolean;
-}
-
-async function submitResponse(
-  assessmentId: string,
-  clientToken: string,
-  questionId: string,
-  answerRaw: string,
-  answerNumeric: number,
-  timeTakenSeconds: number | null,
-): Promise<boolean> {
-  try {
-    const { error } = await supabase
-      .from('responses')
-      .upsert(
-        {
-          assessment_id: assessmentId,
-          client_token: clientToken,
-          question_id: questionId,
-          answer_raw: answerRaw,
-          answer_numeric: answerNumeric,
-          time_taken_seconds: timeTakenSeconds,
-        },
-        { onConflict: 'assessment_id,question_id' },
-      );
-    if (error) return false;
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 const SECTION_COPY: Record<string, { title: string; subtitle: string }> = {
@@ -162,9 +132,6 @@ export function LikertSection({
       return [...rest, { id: questionId, answer: value }];
     });
     onResponseSaved?.(questionId, value);
-    if (assessmentId && clientToken) {
-      void submitResponse(assessmentId, clientToken, questionId, String(value), value, null);
-    }
     autoAdvanceTimeoutRef.current = setTimeout(() => {
       autoAdvanceTimeoutRef.current = null;
       if (currentIndex >= total - 1) {

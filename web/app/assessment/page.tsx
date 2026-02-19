@@ -20,9 +20,8 @@ import type { SectionStep } from "@/lib/assessment";
 type Phase = "start" | "section" | "collect_user" | "complete" | "no_questions";
 
 interface Session {
-  assessmentId: string;
+  version: string;
   sectionSteps: SectionStep[];
-  clientToken: string;
   sections: DbSection[];
   questions: DbQuestion[];
 }
@@ -50,6 +49,7 @@ export default function AssessmentPage() {
   const [reportError, setReportError] = useState<string | null>(null);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
   const [scoringLoading, setScoringLoading] = useState(false);
+  const [lastSubmitIds, setLastSubmitIds] = useState<{ assessmentId: string; clientToken: string } | null>(null);
   const reportFetchedRef = useRef(false);
 
   useEffect(() => {
@@ -61,9 +61,8 @@ export default function AssessmentPage() {
     const sectionSteps = getOrderedSectionSteps(stored.sections, stored.questions, { excludeCognitive: true });
     const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
     setSession({
-      assessmentId: stored.assessmentId,
+      version: stored.version,
       sectionSteps: steps,
-      clientToken: stored.clientToken,
       sections: stored.sections,
       questions: stored.questions,
     });
@@ -85,8 +84,7 @@ export default function AssessmentPage() {
     setQuestionIndex(qIndex);
     if (session) {
       setResumeState({
-        assessmentId: session.assessmentId,
-        clientToken: session.clientToken,
+        version: session.version,
         phase: "section",
         sectionIndex: currentSectionIndex,
         questionIndex: qIndex,
@@ -109,8 +107,7 @@ export default function AssessmentPage() {
     setAssessmentResponses(updated);
     if (session) {
       setResumeState({
-        assessmentId: session.assessmentId,
-        clientToken: session.clientToken,
+        version: session.version,
         phase: phase === "collect_user" ? "collect_user" : "section",
         sectionIndex: currentSectionIndex,
         questionIndex,
@@ -128,8 +125,7 @@ export default function AssessmentPage() {
       setCurrentSectionIndex(next);
       setQuestionIndex(0);
       setResumeState({
-        assessmentId: session.assessmentId,
-        clientToken: session.clientToken,
+        version: session.version,
         phase: "section",
         sectionIndex: next,
         questionIndex: 0,
@@ -149,8 +145,7 @@ export default function AssessmentPage() {
       setQuestionIndex(0);
       if (session) {
         setResumeState({
-          assessmentId: session.assessmentId,
-          clientToken: session.clientToken,
+          version: session.version,
           phase: "section",
           sectionIndex: prevSectionIndex,
           questionIndex: 0,
@@ -165,29 +160,32 @@ export default function AssessmentPage() {
   function completeAssessmentAndGoToCollectUser() {
     if (!session) return;
     setPhase("collect_user");
-    if (session) {
-      setResumeState({
-        assessmentId: session.assessmentId,
-        clientToken: session.clientToken,
-        phase: "collect_user",
-        sectionIndex: currentSectionIndex,
-        questionIndex: 0,
-        sections: session.sections,
-        questions: session.questions,
-        responses: assessmentResponses,
-      });
-    }
+    setResumeState({
+      version: session.version,
+      phase: "collect_user",
+      sectionIndex: currentSectionIndex,
+      questionIndex: 0,
+      sections: session.sections,
+      questions: session.questions,
+      responses: assessmentResponses,
+    });
   }
 
   async function handleUserSaved(firstName?: string, token?: string) {
     if (firstName) setUserFirstName(firstName);
     if (!session || !token) return;
     setScoringLoading(true);
+    const responses = Object.entries(assessmentResponses).map(([questionId, v]) => ({
+      questionId,
+      answerNumeric: v?.answerNumeric ?? null,
+      answerRaw: v?.answerRaw ?? null,
+    }));
+    let submittedIds: { assessmentId: string; clientToken: string } | null = null;
     try {
       const res = await fetch("/api/submit-assessment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, responses }),
       });
       const data = await res.json().catch(() => ({}));
       const error = !res.ok ? (data?.error ?? "Failed to score") : null;
@@ -199,6 +197,10 @@ export default function AssessmentPage() {
           selfSabotageScores: data.selfSabotageScores,
           optimalEnvScores: data.optimalEnvScores,
         });
+        if (typeof data.assessmentId === "string" && typeof data.clientToken === "string") {
+          submittedIds = { assessmentId: data.assessmentId, clientToken: data.clientToken };
+          setLastSubmitIds(submittedIds);
+        }
       } else {
         setCompleteResult({
           mbti: "—",
@@ -217,25 +219,21 @@ export default function AssessmentPage() {
     }
     clearResumeState();
     const vsl = await getVslConfig();
-    if (vsl.vsl_enabled && vsl.vsl_url?.trim()) {
-      const aid = session.assessmentId;
-      const token = session.clientToken;
-      if (aid && token) {
-        if (vsl.vsl_type === "external") {
-          const base = vsl.vsl_url.replace(/\?.*$/, "");
-          const sep = base.includes("?") ? "&" : "?";
-          window.location.href = `${base}${sep}assessment_id=${encodeURIComponent(aid)}&client_token=${encodeURIComponent(token)}`;
-          return;
-        }
-        router.push(`/vsl?assessmentId=${encodeURIComponent(aid)}&clientToken=${encodeURIComponent(token)}`);
+    if (vsl.vsl_enabled && vsl.vsl_url?.trim() && submittedIds) {
+      if (vsl.vsl_type === "external") {
+        const base = vsl.vsl_url.replace(/\?.*$/, "");
+        const sep = base.includes("?") ? "&" : "?";
+        window.location.href = `${base}${sep}assessment_id=${encodeURIComponent(submittedIds.assessmentId)}&client_token=${encodeURIComponent(submittedIds.clientToken)}`;
         return;
       }
+      router.push(`/vsl?assessmentId=${encodeURIComponent(submittedIds.assessmentId)}&clientToken=${encodeURIComponent(submittedIds.clientToken)}`);
+      return;
     }
     setPhase("complete");
   }
 
   useEffect(() => {
-    if (phase !== "complete" || !session || reportText != null || reportError != null || reportFetchedRef.current)
+    if (phase !== "complete" || !lastSubmitIds || reportText != null || reportError != null || reportFetchedRef.current)
       return;
     reportFetchedRef.current = true;
     setReportLoading(true);
@@ -243,7 +241,7 @@ export default function AssessmentPage() {
     fetch("/api/generate-report", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ assessmentId: session.assessmentId, clientToken: session.clientToken }),
+      body: JSON.stringify({ assessmentId: lastSubmitIds.assessmentId, clientToken: lastSubmitIds.clientToken }),
     })
       .then(async (res) => {
         const data = await res.json().catch(() => ({}));
@@ -259,7 +257,7 @@ export default function AssessmentPage() {
       })
       .catch(() => setReportError("Failed to load report"))
       .finally(() => setReportLoading(false));
-  }, [phase, session, reportText, reportError]);
+  }, [phase, lastSubmitIds, reportText, reportError]);
 
   if (resuming) {
     return (
@@ -315,11 +313,11 @@ export default function AssessmentPage() {
       return (
         <div
           className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden"
-          key={`section-${session.assessmentId}-${currentSectionIndex}`}
+          key={`section-${session.version}-${currentSectionIndex}`}
         >
           <LikertSection
-            assessmentId={session.assessmentId}
-            clientToken={session.clientToken}
+            assessmentId={null}
+            clientToken={null}
             questions={step.questions}
             sectionId={step.sectionId}
             sectionIndex={step.orderIndex}
@@ -343,11 +341,11 @@ export default function AssessmentPage() {
       return (
         <div
           className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden"
-          key={`section-${session.assessmentId}-${currentSectionIndex}`}
+          key={`section-${session.version}-${currentSectionIndex}`}
         >
           <ShortAnswerSection
-            assessmentId={session.assessmentId}
-            clientToken={session.clientToken}
+            assessmentId={null}
+            clientToken={null}
             questions={step.questions}
             sectionIndex={step.orderIndex}
             totalSections={steps.length}
@@ -381,8 +379,7 @@ export default function AssessmentPage() {
     return (
       <div className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden">
         <CollectUserScreen
-          assessmentId={session.assessmentId}
-          clientToken={session.clientToken}
+          version={session.version}
           device={device}
           onSaved={handleUserSaved}
         />

@@ -100,7 +100,7 @@ The block (2-3 sentences): Name the deeper pattern. The protective mechanism tha
 The cost (2-3 sentences): What has this already cost them? Be specific to their stated ambition. Not "you're not reaching your potential." Instead use concrete examples.
 
 The tease + close (2-3 sentences): What the full report unlocks. Be specific to their wiring. End with a binary choice and their name.
-
+xx  
 Tone: Sharp, elevated, direct. Like someone who sees them clearly and respects them too much to flatter. They should feel rare, not broken. But they should also feel the weight of what they're leaving on the table.`;
 
 export function buildUserMessage(assessmentDataBlock: string): string {

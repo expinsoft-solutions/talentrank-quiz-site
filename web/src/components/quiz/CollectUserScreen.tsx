@@ -7,15 +7,13 @@ import { Label } from '@/components/ui/label';
 import { setCompletedUserId } from '@/lib/user-id-storage';
 
 interface CollectUserScreenProps {
-  assessmentId: string;
-  clientToken: string;
+  version: string;
   device: 'desktop' | 'mobile' | 'tablet';
   onSaved: (firstName?: string, token?: string) => void;
 }
 
 export function CollectUserScreen({
-  assessmentId,
-  clientToken,
+  version,
   device,
   onSaved,
 }: CollectUserScreenProps) {
@@ -38,10 +36,9 @@ export function CollectUserScreen({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          assessmentId,
-          clientToken,
           email: trimmed,
           firstName: firstName.trim() || undefined,
+          version,
           device,
         }),
       });

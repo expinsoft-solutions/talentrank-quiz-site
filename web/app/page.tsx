@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
-import { getCompletedUserId } from '@/lib/user-id-storage';
 import { getResumeState, setResumeState, clearResumeState } from '@/lib/resume-storage';
 import { getOrderedSectionSteps, getFallbackSectionSteps } from '@/lib/assessment';
-import type { StartAssessmentResponse } from '@/types';
 
 export default function Home() {
   const router = useRouter();
@@ -26,15 +24,10 @@ export default function Home() {
     setError(null);
     setLoading(true);
     try {
-      const userId = getCompletedUserId();
-      const response = await fetch('/api/start-assessment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userId ? { userId } : {}),
-      });
+      const response = await fetch('/api/quiz');
       const data = await response.json();
       if (!response.ok) {
-        setError(data.error ?? 'Failed to start assessment');
+        setError(data.error ?? 'Failed to load quiz');
         setLoading(false);
         return;
       }
@@ -43,24 +36,26 @@ export default function Home() {
         setLoading(false);
         return;
       }
-      const res = data as StartAssessmentResponse;
-      const sectionSteps = getOrderedSectionSteps(res.sections, res.questions, {
+      const { version, sections = [], questions = [] } = data;
+      const sectionSteps = getOrderedSectionSteps(sections, questions, {
         excludeCognitive: true,
       });
       const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
       if (steps.length > 0) {
         setResumeState({
-          assessmentId: res.assessmentId,
-          clientToken: res.clientToken,
+          version: version ?? 'v1.0',
           phase: 'section',
           sectionIndex: 0,
           questionIndex: 0,
-          sections: res.sections,
-          questions: res.questions,
+          sections,
+          questions,
           responses: {},
         });
+        router.push('/assessment');
+      } else {
+        setError('No questions available');
+        setLoading(false);
       }
-      router.push('/assessment');
     } catch {
       setError('Network error');
       setLoading(false);
