@@ -13,7 +13,7 @@ const corsHeaders = {
 };
 
 const ANTHROPIC_VERSION = '2023-06-01';
-const MODEL = 'claude-3-haiku-20240307';
+const DEFAULT_MODEL = 'claude-3-haiku-20240307';
 const MAX_TOKENS = 1024;
 
 Deno.serve(async (req) => {
@@ -121,6 +121,26 @@ Deno.serve(async (req) => {
     const assessmentDataBlock = buildAssessmentDataBlock(data);
     const userMessage = buildUserMessage(assessmentDataBlock);
 
+    let systemPrompt = SYSTEM_PROMPT;
+    const { data: promptRow } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'report_system_prompt')
+      .single();
+    if (promptRow?.value != null && typeof promptRow.value === 'string' && promptRow.value.trim()) {
+      systemPrompt = promptRow.value.trim();
+    }
+
+    let model = DEFAULT_MODEL;
+    const { data: modelRow } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'report_model')
+      .single();
+    if (modelRow?.value != null && typeof modelRow.value === 'string' && modelRow.value.trim()) {
+      model = modelRow.value.trim();
+    }
+
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -129,9 +149,9 @@ Deno.serve(async (req) => {
         'anthropic-version': ANTHROPIC_VERSION,
       },
       body: JSON.stringify({
-        model: MODEL,
+        model,
         max_tokens: MAX_TOKENS,
-        system: SYSTEM_PROMPT,
+        system: systemPrompt,
         messages: [{ role: 'user', content: userMessage }],
       }),
     });

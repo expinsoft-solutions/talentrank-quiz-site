@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { FileQuestion, LayoutList, LogOut, Settings } from 'lucide-react';
+import { FileQuestion, FileText, LayoutList, LogOut, Settings } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -73,6 +73,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           >
             <LayoutList className="w-4 h-4" />
             Submissions
+          </Link>
+          <Link
+            href="/admin/prompt"
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              pathname === '/admin/prompt'
+                ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            AI settings
           </Link>
           <Link
             href="/admin/settings"
