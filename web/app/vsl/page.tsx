@@ -6,6 +6,8 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { getVslConfig } from '@/lib/site-settings';
 
+const PENDING_KEY = 'talentrank_pending_submit';
+
 const YT_ENDED = 0;
 
 function isYoutubeEmbed(url: string): boolean {
@@ -37,13 +39,24 @@ declare global {
 
 function VslContent() {
   const searchParams = useSearchParams();
-  const assessmentId = searchParams.get('assessmentId');
-  const clientToken = searchParams.get('clientToken');
+  const urlAssessmentId = searchParams.get('assessmentId');
+  const urlClientToken = searchParams.get('clientToken');
+  const [ids, setIds] = useState<{ assessmentId: string; clientToken: string } | null>(() =>
+    urlAssessmentId && urlClientToken ? { assessmentId: urlAssessmentId, clientToken: urlClientToken } : null
+  );
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [reportReady, setReportReady] = useState(false);
   const [embedUrl, setEmbedUrl] = useState<string | null>(null);
   const [videoComplete, setVideoComplete] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<{ destroy: () => void } | null>(null);
+  const pendingHandledRef = useRef(false);
+  const reportCheckDoneRef = useRef(false);
+
+  const assessmentId = ids?.assessmentId ?? urlAssessmentId;
+  const clientToken = ids?.clientToken ?? urlClientToken;
 
   useEffect(() => {
     const t = setInterval(() => setElapsed((e) => e + 1), 1000);
@@ -55,10 +68,117 @@ function VslContent() {
   const timerStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:00`;
 
   useEffect(() => {
+    if (pendingHandledRef.current) return;
+    let raw: string | null = null;
+    try {
+      raw = sessionStorage.getItem(PENDING_KEY);
+    } catch {
+      //
+    }
+    if (!raw) return;
+    pendingHandledRef.current = true;
+    let payload: { token: string; responses: Array<{ questionId: string; answerNumeric?: number | null; answerRaw?: string | null }> };
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      try {
+        sessionStorage.removeItem(PENDING_KEY);
+      } catch {
+        //
+      }
+      return;
+    }
+    if (typeof payload?.token !== 'string' || !Array.isArray(payload?.responses)) {
+      try {
+        sessionStorage.removeItem(PENDING_KEY);
+      } catch {
+        //
+      }
+      return;
+    }
+    setSubmitting(true);
+    setSubmitError(null);
+    fetch('/api/submit-assessment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: payload.token, responses: payload.responses }),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        try {
+          sessionStorage.removeItem(PENDING_KEY);
+        } catch {
+          //
+        }
+        if (!res.ok) {
+          setSubmitError(typeof data?.error === 'string' ? data.error : 'Failed to save');
+          setSubmitting(false);
+          return;
+        }
+        if (typeof data?.assessmentId === 'string' && typeof data?.clientToken === 'string') {
+          setIds({ assessmentId: data.assessmentId, clientToken: data.clientToken });
+          const params = new URLSearchParams({
+            assessmentId: data.assessmentId,
+            clientToken: data.clientToken,
+          });
+          window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+          fetch('/api/generate-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ assessmentId: data.assessmentId, clientToken: data.clientToken }),
+          })
+            .then(async (r) => {
+              const d = await r.json().catch(() => ({}));
+              if (r.ok) setReportReady(true);
+            })
+            .catch(() => {});
+        }
+        setSubmitting(false);
+      })
+      .catch(() => {
+        try {
+          sessionStorage.removeItem(PENDING_KEY);
+        } catch {
+          //
+        }
+        setSubmitError('Network error');
+        setSubmitting(false);
+      });
+  }, []);
+
+  useEffect(() => {
     getVslConfig().then((c) => {
       if (c.vsl_embed_url?.trim()) setEmbedUrl(c.vsl_embed_url.trim());
     });
   }, []);
+
+  useEffect(() => {
+    if (!urlAssessmentId || !urlClientToken || !assessmentId || !clientToken || reportCheckDoneRef.current) return;
+    reportCheckDoneRef.current = true;
+    fetch('/api/get-assessment-result', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ assessmentId, clientToken }),
+    })
+      .then((res) => res.json().catch(() => ({})))
+      .then((data) => {
+        if (typeof data?.reportText === 'string' && data.reportText.trim()) {
+          setReportReady(true);
+          return;
+        }
+        fetch('/api/generate-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assessmentId, clientToken }),
+        })
+          .then(async (r) => {
+            const d = await r.json().catch(() => ({}));
+            if (r.ok) setReportReady(true);
+          })
+          .catch(() => {});
+      })
+      .catch(() => {});
+  }, [urlAssessmentId, urlClientToken, assessmentId, clientToken]);
 
   useEffect(() => {
     if (!embedUrl || !isYoutubeEmbed(embedUrl)) return;
@@ -118,7 +238,9 @@ function VslContent() {
       ? `/assessment/result?assessmentId=${encodeURIComponent(assessmentId)}&clientToken=${encodeURIComponent(clientToken)}`
       : '/';
 
-  const canProceed = !embedUrl || videoComplete || !isYoutubeEmbed(embedUrl ?? '');
+  const canProceed =
+    Boolean(assessmentId && clientToken && reportReady) &&
+    (!embedUrl || videoComplete || !isYoutubeEmbed(embedUrl ?? ''));
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-background flex flex-col">
@@ -160,7 +282,7 @@ function VslContent() {
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-4 sm:px-6 sm:py-5 flex flex-col gap-1">
                 <p className="text-white/70 text-xs font-mono tabular-nums">{timerStr}</p>
                 <p className="text-white/95 text-sm sm:text-base font-medium">
-                  Your results are being processed right now.
+                  {submitting ? 'Submitting your answers…' : 'Your results are being processed right now.'}
                 </p>
               </div>
             </>
@@ -182,8 +304,11 @@ function VslContent() {
             &quot;Something literally everyone should know about themselves&quot; — Sarah M.
           </blockquote>
           <p className="text-destructive text-sm sm:text-base font-medium">
-            Your results are being generated. A pop-up will appear below when they are ready.
+            Your results are being generated.
           </p>
+          {submitError && (
+            <p className="text-destructive text-sm font-medium">{submitError}</p>
+          )}
         </div>
 
         <div className="mt-10">
@@ -201,7 +326,7 @@ function VslContent() {
               className="min-w-[200px] h-12 font-medium rounded-lg bg-muted text-muted-foreground cursor-not-allowed"
               disabled
             >
-              See my results
+              {assessmentId && clientToken && !reportReady ? 'Report generating…' : 'See my results'}
             </Button>
           )}
         </div>

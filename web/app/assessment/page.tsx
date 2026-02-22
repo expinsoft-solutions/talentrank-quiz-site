@@ -174,12 +174,45 @@ export default function AssessmentPage() {
   async function handleUserSaved(firstName?: string, token?: string) {
     if (firstName) setUserFirstName(firstName);
     if (!session || !token) return;
-    setScoringLoading(true);
     const responses = Object.entries(assessmentResponses).map(([questionId, v]) => ({
       questionId,
       answerNumeric: v?.answerNumeric ?? null,
       answerRaw: v?.answerRaw ?? null,
     }));
+    clearResumeState();
+    const vsl = await getVslConfig();
+    if (vsl.vsl_enabled && vsl.vsl_url?.trim()) {
+      try {
+        sessionStorage.setItem(
+          "talentrank_pending_submit",
+          JSON.stringify({ token, responses })
+        );
+      } catch {
+        //
+      }
+      if (vsl.vsl_type === "external") {
+        setScoringLoading(true);
+        try {
+          const res = await fetch("/api/submit-assessment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token, responses }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && typeof data?.assessmentId === "string" && typeof data?.clientToken === "string") {
+            const base = vsl.vsl_url.replace(/\?.*$/, "");
+            const sep = base.includes("?") ? "&" : "?";
+            window.location.href = `${base}${sep}assessment_id=${encodeURIComponent(data.assessmentId)}&client_token=${encodeURIComponent(data.clientToken)}`;
+            return;
+          }
+        } finally {
+          setScoringLoading(false);
+        }
+      }
+      router.push("/vsl");
+      return;
+    }
+    setScoringLoading(true);
     let submittedIds: { assessmentId: string; clientToken: string } | null = null;
     try {
       const res = await fetch("/api/submit-assessment", {
@@ -216,18 +249,6 @@ export default function AssessmentPage() {
       });
     } finally {
       setScoringLoading(false);
-    }
-    clearResumeState();
-    const vsl = await getVslConfig();
-    if (vsl.vsl_enabled && vsl.vsl_url?.trim() && submittedIds) {
-      if (vsl.vsl_type === "external") {
-        const base = vsl.vsl_url.replace(/\?.*$/, "");
-        const sep = base.includes("?") ? "&" : "?";
-        window.location.href = `${base}${sep}assessment_id=${encodeURIComponent(submittedIds.assessmentId)}&client_token=${encodeURIComponent(submittedIds.clientToken)}`;
-        return;
-      }
-      router.push(`/vsl?assessmentId=${encodeURIComponent(submittedIds.assessmentId)}&clientToken=${encodeURIComponent(submittedIds.clientToken)}`);
-      return;
     }
     setPhase("complete");
   }

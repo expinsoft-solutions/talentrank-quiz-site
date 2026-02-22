@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { ResultView } from '@/components/quiz';
 import { Loader } from '@/components/ui/loader';
 import type { CompleteResult } from '@/components/quiz/ResultView';
@@ -27,6 +27,9 @@ function ResultPageContent() {
     reportText: string | null;
     firstName: string | null;
   } | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const reportRequestedRef = useRef(false);
 
   useEffect(() => {
     if (!assessmentId || !clientToken) {
@@ -80,6 +83,36 @@ function ResultPageContent() {
     })();
   }, [assessmentId, clientToken]);
 
+  useEffect(() => {
+    if (!result || !assessmentId || !clientToken || reportRequestedRef.current) return;
+    if (result.reportText != null && result.reportText.trim() !== '') return;
+
+    reportRequestedRef.current = true;
+    setReportLoading(true);
+    setReportError(null);
+    fetch('/api/generate-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ assessmentId, clientToken }),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setReportError(typeof data?.error === 'string' ? data.error : 'Failed to generate report');
+          return;
+        }
+        if (data?.error) {
+          setReportError(data.error);
+          return;
+        }
+        if (typeof data?.reportText === 'string') {
+          setResult((prev) => (prev ? { ...prev, reportText: data.reportText } : null));
+        }
+      })
+      .catch(() => setReportError('Failed to generate report'))
+      .finally(() => setReportLoading(false));
+  }, [result, assessmentId, clientToken]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
@@ -104,8 +137,8 @@ function ResultPageContent() {
       completeResult={result.completeResult}
       reportText={result.reportText}
       userFirstName={result.firstName}
-      reportLoading={false}
-      reportError={null}
+      reportLoading={reportLoading}
+      reportError={reportError}
     />
   );
 }
