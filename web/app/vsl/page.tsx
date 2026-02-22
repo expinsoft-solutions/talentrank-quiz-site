@@ -41,8 +41,18 @@ function VslContent() {
   const clientToken = searchParams.get('clientToken');
   const [embedUrl, setEmbedUrl] = useState<string | null>(null);
   const [videoComplete, setVideoComplete] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<{ destroy: () => void } | null>(null);
+
+  useEffect(() => {
+    const t = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const h = Math.floor(elapsed / 3600);
+  const m = Math.floor((elapsed % 3600) / 60);
+  const s = elapsed % 60;
+  const timerStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:00`;
 
   useEffect(() => {
     getVslConfig().then((c) => {
@@ -112,40 +122,85 @@ function VslContent() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-background flex flex-col">
-      <header className="flex items-center justify-between px-4 sm:px-6 h-14 bg-[#4c1d95] text-white shrink-0">
-        <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="" className="h-8 w-auto object-contain" />
-          <span className="font-semibold text-white">TalentRank</span>
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center justify-between px-4 sm:px-6">
+          <img src="/logo.png" alt="TalentRank" className="h-8 w-auto object-contain" />
+          <Button
+            size="sm"
+            className="rounded-lg bg-[#4c1d95] hover:bg-[#5b21b6] text-white font-medium"
+            asChild
+          >
+            <Link href="/">Reveal My TalentRank</Link>
+          </Button>
         </div>
       </header>
-      <main className="flex-1 w-full flex flex-col">
-        {embedUrl && (
-          <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 aspect-video bg-black">
-            {isYoutubeEmbed(embedUrl) ? (
-              <div ref={containerRef} className="w-full h-full" />
-            ) : (
-              <iframe
-                src={buildEmbedSrc(embedUrl)}
-                title="VSL"
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            )}
-          </div>
-        )}
-        <div className="flex flex-col items-center gap-4 px-4 sm:px-6 py-8 max-w-md mx-auto w-full">
-          {!canProceed && (
-            <p className="text-center text-muted-foreground text-sm">
-              Your results are being processed.
-            </p>
+
+      <main className="flex-1 w-full flex flex-col items-center px-4 sm:px-6 py-8 sm:py-12">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground text-center mb-2">
+          Your Custom Report Is Being Generated...
+        </h1>
+        <p className="text-center text-muted-foreground text-sm sm:text-base max-w-xl mb-8">
+          Your AI Analysis takes 3-5 minutes to complete. While it processes, watch this explanation of what makes your assessment different from every personality test you&apos;ve taken.
+        </p>
+
+        <div className="w-full max-w-4xl mx-auto relative aspect-video bg-black rounded-xl overflow-hidden shadow-xl">
+          {embedUrl && (
+            <>
+              {isYoutubeEmbed(embedUrl) ? (
+                <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+              ) : (
+                <iframe
+                  src={buildEmbedSrc(embedUrl)}
+                  title="VSL"
+                  className="absolute inset-0 w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-4 sm:px-6 sm:py-5 flex flex-col gap-1">
+                <p className="text-white/70 text-xs font-mono tabular-nums">{timerStr}</p>
+                <p className="text-white/95 text-sm sm:text-base font-medium">
+                  Your results are being processed right now.
+                </p>
+              </div>
+            </>
           )}
+          {!embedUrl && (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted">
+              <p className="text-muted-foreground text-sm">Loading video...</p>
+            </div>
+          )}
+        </div>
+
+        <div className="w-full max-w-xl mx-auto mt-8 sm:mt-10 space-y-4 text-center">
+          <div className="flex justify-center gap-0.5 text-amber-500" aria-hidden>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <span key={i} className="text-lg sm:text-xl">★</span>
+            ))}
+          </div>
+          <blockquote className="text-muted-foreground text-sm sm:text-base italic">
+            &quot;Something literally everyone should know about themselves&quot; — Sarah M.
+          </blockquote>
+          <p className="text-destructive text-sm sm:text-base font-medium">
+            Your results are being generated. A pop-up will appear below when they are ready.
+          </p>
+        </div>
+
+        <div className="mt-10">
           {canProceed ? (
-            <Button size="lg" className="min-w-[200px] h-12 font-medium rounded-lg bg-[#4c1d95] hover:bg-[#5b21b6] text-white" asChild>
+            <Button
+              size="lg"
+              className="min-w-[200px] h-12 font-medium rounded-lg bg-[#4c1d95] hover:bg-[#5b21b6] text-white"
+              asChild
+            >
               <Link href={resultHref}>See my results</Link>
             </Button>
           ) : (
-            <Button size="lg" className="min-w-[200px] h-12 font-medium rounded-lg bg-muted text-muted-foreground cursor-not-allowed" disabled>
+            <Button
+              size="lg"
+              className="min-w-[200px] h-12 font-medium rounded-lg bg-muted text-muted-foreground cursor-not-allowed"
+              disabled
+            >
               See my results
             </Button>
           )}
