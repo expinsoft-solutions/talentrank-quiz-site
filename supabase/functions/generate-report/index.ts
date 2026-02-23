@@ -180,7 +180,7 @@ Deno.serve(async (req) => {
 
     const { error: updateError } = await supabase
       .from('assessment_attempts')
-      .update({ report_text: reportText })
+      .update({ report_text: reportText, report_model: model })
       .eq('id', assessmentId);
 
     if (updateError) {

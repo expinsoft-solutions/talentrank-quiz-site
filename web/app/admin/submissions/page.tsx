@@ -13,6 +13,7 @@ interface Submission {
   completedAt: string | null;
   mbti: string | null;
   cognitivePercentile: number | null;
+  reportModel: string | null;
   user: { email?: string; firstName?: string };
 }
 
@@ -86,6 +87,7 @@ export default function AdminSubmissionsPage() {
                 <th className="text-left p-3 font-medium">Status</th>
                 <th className="text-left p-3 font-medium">MBTI</th>
                 <th className="text-left p-3 font-medium">IQ %ile</th>
+                <th className="text-left p-3 font-medium">Report model</th>
                 <th className="p-3" />
               </tr>
             </thead>
@@ -116,6 +118,7 @@ export default function AdminSubmissionsPage() {
                   </td>
                   <td className="p-3 font-mono">{row.mbti ?? '—'}</td>
                   <td className="p-3">{row.cognitivePercentile ?? '—'}</td>
+                  <td className="p-3 font-mono text-xs text-slate-500">{row.reportModel ?? '—'}</td>
                   <td className="p-3">
                     <Link
                       href={`/admin/submissions/${row.id}`}

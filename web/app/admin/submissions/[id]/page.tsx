@@ -16,6 +16,7 @@ interface Attempt {
   cognitivePercentile: number | null;
   neuroticismScore: number | null;
   reportText: string | null;
+  reportModel: string | null;
 }
 
 interface ResponseRow {
@@ -127,6 +128,12 @@ export default function AdminSubmissionDetailPage() {
                 <div>
                   <span className="text-slate-500 text-sm block">Neuroticism</span>
                   <span>{attempt.neuroticismScore}</span>
+                </div>
+              )}
+              {attempt.reportModel && (
+                <div>
+                  <span className="text-slate-500 text-sm block">Report model</span>
+                  <span className="font-mono text-sm">{attempt.reportModel}</span>
                 </div>
               )}
             </div>

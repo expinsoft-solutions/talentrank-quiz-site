@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { FileQuestion, FileText, LayoutList, LogOut, Settings, Video } from 'lucide-react';
+import { FileQuestion, LayoutList, LogOut, Settings, Sparkles, Video } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -82,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
-            <FileText className="w-4 h-4" />
+            <Sparkles className="w-4 h-4" />
             AI settings
           </Link>
           <Link

@@ -2,30 +2,50 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { FileText } from 'lucide-react';
 
 const DEFAULT_MODEL = 'claude-3-haiku-20240307';
 
+interface ModelOption {
+  id: string;
+  displayName: string;
+}
+
 export default function AdminPromptPage() {
   const [reportSystemPrompt, setReportSystemPrompt] = useState('');
   const [reportModel, setReportModel] = useState(DEFAULT_MODEL);
+  const [models, setModels] = useState<ModelOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch('/api/admin/report-prompt')
-      .then((res) => (res.ok ? res.json() : { reportSystemPrompt: '', reportModel: DEFAULT_MODEL }))
-      .then((data) => {
-        setReportSystemPrompt(data.reportSystemPrompt ?? '');
-        setReportModel(data.reportModel ?? DEFAULT_MODEL);
+    Promise.all([
+      fetch('/api/admin/report-prompt').then((res) =>
+        res.ok ? res.json() : { reportSystemPrompt: '', reportModel: DEFAULT_MODEL }
+      ),
+      fetch('/api/admin/claude-models').then((res) =>
+        res.ok ? res.json() : { models: [] }
+      ),
+    ])
+      .then(([promptData, modelsData]) => {
+        setReportSystemPrompt(promptData.reportSystemPrompt ?? '');
+        setReportModel(promptData.reportModel ?? DEFAULT_MODEL);
+        setModels(modelsData.models ?? []);
       })
       .catch(() => {
         setReportSystemPrompt('');
         setReportModel(DEFAULT_MODEL);
+        setModels([]);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -67,17 +87,31 @@ export default function AdminPromptPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="report-model">Claude model</Label>
-            <Input
-              id="report-model"
-              type="text"
-              value={reportModel}
-              onChange={(e) => setReportModel(e.target.value)}
-              placeholder={DEFAULT_MODEL}
+            <Select
+              value={reportModel || DEFAULT_MODEL}
+              onValueChange={(v) => setReportModel(v || DEFAULT_MODEL)}
               disabled={loading}
-              className="font-mono text-sm"
-            />
+            >
+              <SelectTrigger id="report-model" className="font-mono text-sm">
+                <SelectValue placeholder={DEFAULT_MODEL} />
+              </SelectTrigger>
+              <SelectContent>
+                {(() => {
+                  const current = reportModel || DEFAULT_MODEL;
+                  const hasCurrent = models.some((m) => m.id === current);
+                  const options = hasCurrent
+                    ? models
+                    : [...models, { id: current, displayName: `${current} (saved)` }];
+                  return options.map((m) => (
+                    <SelectItem key={m.id} value={m.id} className="font-mono">
+                      {m.displayName}
+                    </SelectItem>
+                  ));
+                })()}
+              </SelectContent>
+            </Select>
             <p className="text-xs text-slate-500">
-              Full Claude model ID, e.g. <code>{DEFAULT_MODEL}</code>. Leave empty to use the default model.
+              Model used for report generation. Loaded from Anthropic API when ANTHROPIC_API_KEY is set.
             </p>
           </div>
 

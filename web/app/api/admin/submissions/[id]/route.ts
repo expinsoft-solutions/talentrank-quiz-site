@@ -70,6 +70,7 @@ export async function GET(
     cognitivePercentile: attempt.cognitive_percentile,
     neuroticismScore: attempt.neuroticism_score,
     reportText: attempt.report_text,
+    reportModel: attempt.report_model,
   };
 
   const userOut = user

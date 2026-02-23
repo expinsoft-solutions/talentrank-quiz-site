@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   const supabase = createAdminClient();
   let query = supabase
     .from('assessment_attempts')
-    .select('id, status, started_at, completed_at, mbti, axis_strengths, cognitive_percentile, report_text, user_id', {
+    .select('id, status, started_at, completed_at, mbti, axis_strengths, cognitive_percentile, report_text, report_model, user_id', {
       count: 'exact',
     })
     .order('started_at', { ascending: false })
@@ -79,6 +79,7 @@ export async function GET(request: Request) {
       axisStrengths: row.axis_strengths,
       cognitivePercentile: row.cognitive_percentile,
       reportText: row.report_text,
+      reportModel: row.report_model,
       user: u,
     };
   });

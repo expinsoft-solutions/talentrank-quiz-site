@@ -66,7 +66,7 @@ export default function AdminVslPage() {
   }
 
   return (
-    <div className="max-w-lg space-y-6">
+    <div className="max-w-lg mx-auto space-y-6">
       <h1 className="text-2xl font-semibold">VSL customization</h1>
       <p className="text-sm text-slate-500">
         Configure the video / report-generation page shown after users complete the assessment. When VSL is enabled, users are redirected here before seeing results.
