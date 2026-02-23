@@ -63,7 +63,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: auth.status });
   }
 
-  let body: { reportSystemPrompt?: string };
+  let body: { reportSystemPrompt?: string; reportModel?: string };
   try {
     body = await request.json();
   } catch {

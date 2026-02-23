@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { toast } from 'sonner';
@@ -29,12 +30,261 @@ interface Question {
   options?: string[];
 }
 
+function QuestionsList({
+  section,
+  editingQuestion,
+  setEditingQuestion,
+  updateQuestion,
+  reorderQuestions,
+  dragRef,
+  dragOver,
+  setDragOver,
+}: {
+  section: Section;
+  editingQuestion: string | null;
+  setEditingQuestion: (id: string | null) => void;
+  updateQuestion: (sectionId: string, questionId: string, updates: Partial<Question>) => void;
+  reorderQuestions: (sectionId: string, fromIndex: number, toIndex: number) => void;
+  dragRef: React.MutableRefObject<{ sectionId: string; index: number } | null>;
+  dragOver: { sectionId: string; index: number } | null;
+  setDragOver: (v: { sectionId: string; index: number } | null) => void;
+}) {
+  return (
+    <div
+      className="space-y-2"
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          setDragOver(null);
+        }
+      }}
+    >
+      {section.questions.map((q, qIdx) => {
+        const showLineAbove =
+          dragOver?.sectionId === section.id &&
+          dragOver?.index === qIdx &&
+          dragRef.current?.sectionId === section.id &&
+          dragRef.current?.index !== qIdx;
+        return (
+          <div key={q.id}>
+            {showLineAbove && (
+              <div
+                className="h-0.5 rounded-full bg-indigo-500 my-1 mx-2 animate-pulse"
+                aria-hidden
+              />
+            )}
+            <div
+              draggable
+              onDragStart={() => {
+                dragRef.current = { sectionId: section.id, index: qIdx };
+                setDragOver({ sectionId: section.id, index: qIdx });
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (dragRef.current?.sectionId === section.id) {
+                  setDragOver({ sectionId: section.id, index: qIdx });
+                }
+              }}
+              onDragEnd={() => {
+                setDragOver(null);
+                dragRef.current = null;
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const src = dragRef.current;
+                if (src && src.sectionId === section.id) {
+                  reorderQuestions(section.id, src.index, qIdx);
+                }
+                setDragOver(null);
+                dragRef.current = null;
+              }}
+              className="rounded border border-slate-200 dark:border-slate-700 p-3 space-y-2 flex gap-3 items-start"
+            >
+              <span
+                className="shrink-0 flex items-center pt-2.5 cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600 touch-none"
+                aria-label="Drag to reorder"
+              >
+                <GripVertical className="h-4 w-4" />
+              </span>
+              <div className="flex-1 min-w-0 space-y-2">
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between gap-4 text-left"
+                  onClick={() =>
+                    setEditingQuestion(editingQuestion === q.id ? null : q.id)
+                  }
+                >
+                  <span className="font-mono text-xs text-slate-500 shrink-0">{q.id}</span>
+                  <span className="text-sm truncate min-w-0 flex-1">
+                    {(q.statement ?? q.text ?? '').slice(0, 80)}
+                    {(q.statement ?? q.text ?? '').length > 80 ? '…' : ''}
+                  </span>
+                  <span className="shrink-0">{editingQuestion === q.id ? '−' : '+'}</span>
+                </button>
+
+                {editingQuestion === q.id && (
+                  <div className="pt-2 space-y-3 text-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs text-slate-500 block mb-1">Type</label>
+                        <select
+                          value={q.type ?? 'likert'}
+                          onChange={(e) => {
+                            const newType = e.target.value;
+                            const baseOpts = q.options ?? [];
+                            const opts =
+                              newType === 'mcq'
+                                ? [...baseOpts, '', '', ''].slice(0, 4)
+                                : newType === 'binary'
+                                  ? [...baseOpts, ''].slice(0, 2)
+                                  : [];
+                            updateQuestion(section.id, q.id, {
+                              type: newType,
+                              options: newType === 'likert' || newType === 'text' ? [] : opts,
+                            });
+                          }}
+                          className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
+                        >
+                          <option value="likert">Likert</option>
+                          <option value="text">Text</option>
+                          <option value="mcq">MCQ (4 options)</option>
+                          <option value="binary">Binary (2 options)</option>
+                        </select>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="text-xs text-slate-500 block mb-1">Statement</label>
+                        <textarea
+                          value={q.statement ?? q.text ?? ''}
+                          onChange={(e) =>
+                            updateQuestion(section.id, q.id, {
+                              statement: e.target.value,
+                              text: e.target.value,
+                            })
+                          }
+                          rows={2}
+                          className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
+                        />
+                      </div>
+                    </div>
+                    {q.type === 'mcq' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {[0, 1, 2, 3].map((i) => {
+                          const opts = [...(q.options ?? []), '', '', ''].slice(0, 4);
+                          return (
+                            <div key={i}>
+                              <label className="text-xs text-slate-500 block mb-1">
+                                Option {i + 1}
+                              </label>
+                              <input
+                                type="text"
+                                value={opts[i] ?? ''}
+                                onChange={(e) => {
+                                  const newOpts = [...opts];
+                                  newOpts[i] = e.target.value;
+                                  updateQuestion(section.id, q.id, { options: newOpts });
+                                }}
+                                placeholder={`Option ${i + 1}`}
+                                className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {q.type === 'binary' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {[0, 1].map((i) => {
+                          const opts = [...(q.options ?? []), ''].slice(0, 2);
+                          return (
+                            <div key={i}>
+                              <label className="text-xs text-slate-500 block mb-1">
+                                Option {i + 1}
+                              </label>
+                              <input
+                                type="text"
+                                value={opts[i] ?? ''}
+                                onChange={(e) => {
+                                  const newOpts = [...opts];
+                                  newOpts[i] = e.target.value;
+                                  updateQuestion(section.id, q.id, { options: newOpts });
+                                }}
+                                placeholder={i === 0 ? 'Yes / True' : 'No / False'}
+                                className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={q.reverseScored ?? q.reverse_scored ?? false}
+                          onChange={(e) =>
+                            updateQuestion(section.id, q.id, {
+                              reverseScored: e.target.checked,
+                              reverse_scored: e.target.checked,
+                            })
+                          }
+                        />
+                        <span className="text-xs">Reverse scored</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={q.active !== false}
+                          onChange={(e) =>
+                            updateQuestion(section.id, q.id, { active: e.target.checked })
+                          }
+                        />
+                        <span className="text-xs">Active</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      {dragRef.current?.sectionId === section.id &&
+        dragOver?.sectionId === section.id &&
+        dragOver?.index === section.questions.length && (
+          <div
+            className="h-0.5 rounded-full bg-indigo-500 my-1 mx-2 animate-pulse"
+            aria-hidden
+          />
+        )}
+      <div
+        className="h-4 -mt-2"
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (dragRef.current?.sectionId === section.id) {
+            setDragOver({ sectionId: section.id, index: section.questions.length });
+          }
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          const src = dragRef.current;
+          if (src && src.sectionId === section.id) {
+            reorderQuestions(section.id, src.index, section.questions.length);
+          }
+          setDragOver(null);
+          dragRef.current = null;
+        }}
+      />
+    </div>
+  );
+}
+
 export default function AdminQuestionsPage() {
   const [questionnaire, setQuestionnaire] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
+  const dragRef = useRef<{ sectionId: string; index: number } | null>(null);
+  const [dragOver, setDragOver] = useState<{ sectionId: string; index: number } | null>(null);
 
   useEffect(() => {
     fetch('/api/admin/questionnaire')
@@ -83,6 +333,18 @@ export default function AdminQuestionsPage() {
             q.id === questionId ? { ...q, ...updates } : q
           ),
         };
+      })
+    );
+  }
+
+  function reorderQuestions(sectionId: string, fromIndex: number, toIndex: number) {
+    setQuestionnaire((prev) =>
+      prev.map((s) => {
+        if (s.id !== sectionId) return s;
+        const qs = [...s.questions];
+        const [removed] = qs.splice(fromIndex, 1);
+        qs.splice(toIndex, 0, removed);
+        return { ...s, questions: qs };
       })
     );
   }
@@ -159,167 +421,16 @@ export default function AdminQuestionsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  {section.questions.map((q) => (
-                    <div
-                      key={q.id}
-                      className="rounded border border-slate-200 dark:border-slate-700 p-3 space-y-2"
-                    >
-                      <button
-                        type="button"
-                        className="w-full flex items-center justify-between gap-4 text-left"
-                        onClick={() =>
-                          setEditingQuestion(
-                            editingQuestion === q.id ? null : q.id
-                          )
-                        }
-                      >
-                        <span className="font-mono text-xs text-slate-500 shrink-0">
-                          {q.id}
-                        </span>
-                        <span className="text-sm truncate min-w-0 flex-1">
-                          {(q.statement ?? q.text ?? '').slice(0, 80)}
-                          {(q.statement ?? q.text ?? '').length > 80 ? '…' : ''}
-                        </span>
-                        <span className="shrink-0">{editingQuestion === q.id ? '−' : '+'}</span>
-                      </button>
-
-                      {editingQuestion === q.id && (
-                        <div className="pt-2 space-y-3 text-sm">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="text-xs text-slate-500 block mb-1">
-                                Type
-                              </label>
-                              <select
-                              value={q.type ?? 'likert'}
-                              onChange={(e) => {
-                                const newType = e.target.value;
-                                const baseOpts = q.options ?? [];
-                                const opts =
-                                  newType === 'mcq'
-                                    ? [...baseOpts, '', '', ''].slice(0, 4)
-                                    : newType === 'binary'
-                                      ? [...baseOpts, ''].slice(0, 2)
-                                      : [];
-                                updateQuestion(section.id, q.id, {
-                                  type: newType,
-                                  options: newType === 'likert' || newType === 'text' ? [] : opts,
-                                });
-                              }}
-                              className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
-                            >
-                              <option value="likert">Likert</option>
-                              <option value="text">Text</option>
-                              <option value="mcq">MCQ (4 options)</option>
-                              <option value="binary">Binary (2 options)</option>
-                            </select>
-                            </div>
-                            <div className="md:col-span-2">
-                              <label className="text-xs text-slate-500 block mb-1">
-                                Statement
-                              </label>
-                              <textarea
-                                value={q.statement ?? q.text ?? ''}
-                                onChange={(e) =>
-                                  updateQuestion(section.id, q.id, {
-                                    statement: e.target.value,
-                                    text: e.target.value,
-                                  })
-                                }
-                                rows={2}
-                                className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
-                              />
-                            </div>
-                          </div>
-                          {q.type === 'mcq' && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {[0, 1, 2, 3].map((i) => {
-                              const opts = [...(q.options ?? []), '', '', ''].slice(0, 4);
-                              return (
-                                <div key={i}>
-                                  <label className="text-xs text-slate-500 block mb-1">
-                                    Option {i + 1}
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={opts[i] ?? ''}
-                                    onChange={(e) => {
-                                      const newOpts = [...opts];
-                                      newOpts[i] = e.target.value;
-                                      updateQuestion(section.id, q.id, {
-                                        options: newOpts,
-                                      });
-                                    }}
-                                    placeholder={`Option ${i + 1}`}
-                                    className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
-                                  />
-                                </div>
-                              );
-                              })}
-                            </div>
-                          )}
-                          {q.type === 'binary' && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {[0, 1].map((i) => {
-                              const opts = [...(q.options ?? []), ''].slice(0, 2);
-                              return (
-                                <div key={i}>
-                                  <label className="text-xs text-slate-500 block mb-1">
-                                    Option {i + 1}
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={opts[i] ?? ''}
-                                    onChange={(e) => {
-                                      const newOpts = [...opts];
-                                      newOpts[i] = e.target.value;
-                                      updateQuestion(section.id, q.id, {
-                                        options: newOpts,
-                                      });
-                                    }}
-                                    placeholder={i === 0 ? 'Yes / True' : 'No / False'}
-                                    className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
-                                  />
-                                </div>
-                              );
-                              })}
-                            </div>
-                          )}
-                          <div className="flex items-center gap-4">
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={
-                                  q.reverseScored ?? q.reverse_scored ?? false
-                                }
-                                onChange={(e) =>
-                                  updateQuestion(section.id, q.id, {
-                                    reverseScored: e.target.checked,
-                                    reverse_scored: e.target.checked,
-                                  })
-                                }
-                              />
-                              <span className="text-xs">Reverse scored</span>
-                            </label>
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={q.active !== false}
-                                onChange={(e) =>
-                                  updateQuestion(section.id, q.id, {
-                                    active: e.target.checked,
-                                  })
-                                }
-                              />
-                              <span className="text-xs">Active</span>
-                            </label>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <QuestionsList
+                  section={section}
+                  editingQuestion={editingQuestion}
+                  setEditingQuestion={setEditingQuestion}
+                  updateQuestion={updateQuestion}
+                  reorderQuestions={reorderQuestions}
+                  dragRef={dragRef}
+                  dragOver={dragOver}
+                  setDragOver={setDragOver}
+                />
               </div>
             )}
           </div>

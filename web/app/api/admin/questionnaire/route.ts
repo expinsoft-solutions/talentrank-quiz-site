@@ -67,18 +67,36 @@ export async function PUT(request: Request) {
   }
 
   const supabase = createAdminClient();
+  const { data: existing } = await supabase
+    .from('assessments')
+    .select('id')
+    .eq('version', 'v1.0')
+    .single();
+
+  const payload = { questionnaire: body.questionnaire, version: 'v1.0', language_key: 'en' };
+
+  if (existing?.id != null) {
+    const { data, error } = await supabase
+      .from('assessments')
+      .update(payload)
+      .eq('id', existing.id)
+      .select('id, version')
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, id: data?.id, version: data?.version });
+  }
+
   const { data, error } = await supabase
     .from('assessments')
-    .upsert(
-      { questionnaire: body.questionnaire, version: 'v1.0', language_key: 'en' },
-      { onConflict: 'version' }
-    )
+    .insert(payload)
     .select('id, version')
     .single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-
   return NextResponse.json({ ok: true, id: data?.id, version: data?.version });
 }
