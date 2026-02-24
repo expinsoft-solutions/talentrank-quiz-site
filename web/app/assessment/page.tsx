@@ -373,7 +373,6 @@ export default function AssessmentPage() {
             initialQuestionIndex={questionIndex}
             initialValues={initialValuesForStep}
             onComplete={handleSectionComplete}
-            onPrevious={handleSectionPrevious}
             onProgress={handleSectionProgress}
             onResponseSaved={(questionId, answerRaw) =>
               handleResponseSaved(questionId, undefined, answerRaw)

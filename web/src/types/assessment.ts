@@ -58,6 +58,7 @@ export interface DbSection {
   isTimed: boolean | null;
   timeLimitSeconds: number | null;
   purpose: string | null;
+  enabled?: boolean;
 }
 
 export interface DbQuestion {

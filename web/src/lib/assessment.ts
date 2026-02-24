@@ -1,8 +1,6 @@
 import type { DbQuestion, DbSection } from '@/types';
 import type { PersonalityQuestion } from '@/data/personalityQuestions';
 
-const PERSONALITY_SECTION_ID = 'personality_wiring';
-const COGNITIVE_SECTION_ID = 'cognitive_architecture';
 const SHORT_ANSWER_SECTION_ID = 'short_answer';
 
 export interface LikertSectionStep {
@@ -30,13 +28,10 @@ export interface GetOrderedSectionStepsOptions {
 export function getOrderedSectionSteps(
   sections: DbSection[],
   questions: DbQuestion[],
-  options: GetOrderedSectionStepsOptions = {}
+  _options: GetOrderedSectionStepsOptions = {}
 ): SectionStep[] {
-  const { excludeCognitive = true } = options;
   const ordered = [...sections].sort((a, b) => a.orderIndex - b.orderIndex);
-  const filtered = excludeCognitive
-    ? ordered.filter((s) => s.id !== COGNITIVE_SECTION_ID)
-    : ordered;
+  const filtered = ordered.filter((s) => s.enabled !== false);
 
   return filtered.map((section, index) => {
     const sectionQuestions = questions.filter((q) => q.sectionId === section.id);

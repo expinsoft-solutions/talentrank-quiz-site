@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
+
+const MIN_ANSWER_LENGTH = 10;
+const MAX_ANSWER_LENGTH = 2000;
 
 interface ShortAnswerQuestion {
   id: string;
@@ -19,7 +23,6 @@ interface ShortAnswerSectionProps {
   initialQuestionIndex?: number;
   initialValues?: Record<string, string>;
   onComplete: () => void;
-  onPrevious?: () => void;
   onProgress?: (sectionIndex: number, questionIndex: number) => void;
   onResponseSaved?: (questionId: string, answerRaw: string) => void;
   isFirstSection?: boolean;
@@ -35,7 +38,6 @@ export function ShortAnswerSection({
   initialQuestionIndex = 0,
   initialValues,
   onComplete,
-  onPrevious,
   onProgress,
   onResponseSaved,
   isFirstSection = false,
@@ -47,6 +49,7 @@ export function ShortAnswerSection({
     new Set(initialValues ? Object.keys(initialValues).filter((id) => (initialValues[id] ?? '').trim().length > 0) : [])
   );
   const [currentIndex, setCurrentIndex] = useState(() => Math.min(initialQuestionIndex, Math.max(0, total - 1)));
+  const [answerError, setAnswerError] = useState<string | null>(null);
 
   useEffect(() => {
     setValues(initialValues ?? {});
@@ -65,6 +68,7 @@ export function ShortAnswerSection({
 
   const setValue = (questionId: string, value: string) => {
     setValues((prev) => ({ ...prev, [questionId]: value }));
+    setAnswerError(null);
   };
 
   const flushCurrent = (questionId: string) => {
@@ -75,7 +79,30 @@ export function ShortAnswerSection({
     }
   };
 
+  function validateCurrentAnswer(): boolean {
+    if (!currentQuestion) return true;
+    const raw = (values[currentQuestion.id] ?? '').trim();
+    if (raw.length === 0) {
+      setAnswerError('Please enter an answer.');
+      toast.error('Answer is required');
+      return false;
+    }
+    if (raw.length < MIN_ANSWER_LENGTH) {
+      setAnswerError(`Please write at least ${MIN_ANSWER_LENGTH} characters.`);
+      toast.error(`Please write at least ${MIN_ANSWER_LENGTH} characters`);
+      return false;
+    }
+    if (raw.length > MAX_ANSWER_LENGTH) {
+      setAnswerError(`Please keep your answer under ${MAX_ANSWER_LENGTH} characters.`);
+      toast.error(`Answer must be under ${MAX_ANSWER_LENGTH} characters`);
+      return false;
+    }
+    setAnswerError(null);
+    return true;
+  }
+
   const handleNext = () => {
+    if (!validateCurrentAnswer()) return;
     if (currentQuestion) flushCurrent(currentQuestion.id);
     if (isLastQuestion) {
       questions.forEach((q) => {
@@ -88,18 +115,8 @@ export function ShortAnswerSection({
     } else {
       const next = currentIndex + 1;
       setCurrentIndex(next);
+      setAnswerError(null);
       onProgress?.(sectionIndex, next);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestion) flushCurrent(currentQuestion.id);
-    if (currentIndex > 0) {
-      const prev = currentIndex - 1;
-      setCurrentIndex(prev);
-      onProgress?.(sectionIndex, prev);
-    } else {
-      onPrevious?.();
     }
   };
 
@@ -145,29 +162,29 @@ export function ShortAnswerSection({
                   handleNext();
                 }
               }}
-              placeholder="Share your thoughts... (Enter to go to next)"
-              className="min-h-[100px] xs:min-h-[120px] text-sm xs:text-base resize-none rounded-lg border-2 border-input bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors placeholder:text-muted-foreground/70 w-full min-w-0"
+              placeholder={`Share your thoughts... (min ${MIN_ANSWER_LENGTH} characters, Enter to go to next)`}
+              className={`min-h-[100px] xs:min-h-[120px] text-sm xs:text-base resize-none rounded-lg border-2 bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors placeholder:text-muted-foreground/70 w-full min-w-0 ${
+                answerError ? 'border-amber-500 dark:border-amber-500' : 'border-input'
+              }`}
             />
+            {answerError && (
+              <p className="text-sm text-amber-600 dark:text-amber-400 mt-2" role="alert">
+                {answerError}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground mt-1">
+              {(values[currentQuestion.id] ?? '').trim().length} / {MAX_ANSWER_LENGTH} characters
+            </p>
           </label>
         )}
       </div>
 
-      <div className="pt-6 sm:pt-10 mt-4 pb-6 sm:pb-8 safe-bottom flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handlePrevious}
-          disabled={currentIndex === 0 && isFirstSection}
-          size="lg"
-          className="order-2 sm:order-1 min-w-[100px] xs:min-w-[120px] h-11 xs:h-12 text-sm xs:text-base font-medium touch-manipulation"
-        >
-          Previous
-        </Button>
+      <div className="pt-6 sm:pt-10 mt-4 pb-6 sm:pb-8 safe-bottom flex justify-end">
         <Button
           type="button"
           onClick={handleNext}
           size="lg"
-          className="order-1 sm:order-2 w-full sm:w-auto min-w-[120px] xs:min-w-[140px] h-11 xs:h-12 text-sm xs:text-base font-medium shadow-sm hover:shadow transition-shadow touch-manipulation"
+          className="w-full sm:w-auto min-w-[120px] xs:min-w-[140px] h-11 xs:h-12 text-sm xs:text-base font-medium shadow-sm hover:shadow transition-shadow touch-manipulation"
         >
           {isLastQuestion ? 'Finish' : 'Next'}
         </Button>

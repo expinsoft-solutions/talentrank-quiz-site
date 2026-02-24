@@ -143,12 +143,6 @@ export function CognitiveSection({
     }
   };
 
-  const goPrev = () => {
-    if (currentIndex > 0) {
-      recordTimeAndNavigate(currentIndex - 1);
-    }
-  };
-
   const isLast = currentIndex >= total - 1;
   const currentAnswered =
     inputValue.trim() !== '' && !Number.isNaN(Number(inputValue.trim()));
@@ -209,16 +203,7 @@ export function CognitiveSection({
         </AnimatePresence>
       </div>
 
-      <div className="flex gap-3 sm:gap-4 pt-6 sm:pt-8">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={goPrev}
-          disabled={currentIndex === 0}
-          className="min-w-0"
-        >
-          Previous
-        </Button>
+      <div className="flex justify-end gap-3 sm:gap-4 pt-6 sm:pt-8">
         <Button
           type="button"
           onClick={goNext}
