@@ -5,9 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { COGNITIVE_SECTION_ID } from '@/lib/assessment';
 
 const MIN_ANSWER_LENGTH = 10;
 const MAX_ANSWER_LENGTH = 2000;
+const COGNITIVE_TIME_LIMIT_SECONDS = 360;
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
 
 interface ShortAnswerQuestion {
   id: string;
@@ -18,6 +26,7 @@ interface ShortAnswerSectionProps {
   assessmentId?: string | null;
   clientToken?: string | null;
   questions: ShortAnswerQuestion[];
+  sectionId?: string;
   sectionIndex: number;
   totalSections: number;
   initialQuestionIndex?: number;
@@ -33,6 +42,7 @@ export function ShortAnswerSection({
   assessmentId,
   clientToken,
   questions,
+  sectionId,
   sectionIndex,
   totalSections,
   initialQuestionIndex = 0,
@@ -44,12 +54,15 @@ export function ShortAnswerSection({
   isLastSection = false,
 }: ShortAnswerSectionProps) {
   const total = questions.length;
+  const isCognitive = sectionId === COGNITIVE_SECTION_ID;
   const [values, setValues] = useState<Record<string, string>>(() => initialValues ?? {});
   const [submitted, setSubmitted] = useState<Set<string>>(() =>
     new Set(initialValues ? Object.keys(initialValues).filter((id) => (initialValues[id] ?? '').trim().length > 0) : [])
   );
   const [currentIndex, setCurrentIndex] = useState(() => Math.min(initialQuestionIndex, Math.max(0, total - 1)));
   const [answerError, setAnswerError] = useState<string | null>(null);
+  const [secondsRemaining, setSecondsRemaining] = useState(COGNITIVE_TIME_LIMIT_SECONDS);
+  const [timeExpired, setTimeExpired] = useState(false);
 
   useEffect(() => {
     setValues(initialValues ?? {});
@@ -57,7 +70,25 @@ export function ShortAnswerSection({
       new Set(initialValues ? Object.keys(initialValues).filter((id) => (initialValues[id] ?? '').trim().length > 0) : [])
     );
     setCurrentIndex(Math.min(initialQuestionIndex, Math.max(0, total - 1)));
-  }, [assessmentId, sectionIndex]);
+    if (isCognitive) {
+      setSecondsRemaining(COGNITIVE_TIME_LIMIT_SECONDS);
+      setTimeExpired(false);
+    }
+  }, [assessmentId, sectionIndex, isCognitive]);
+
+  useEffect(() => {
+    if (!isCognitive || timeExpired) return;
+    const interval = setInterval(() => {
+      setSecondsRemaining((prev) => {
+        if (prev <= 1) {
+          setTimeExpired(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isCognitive, timeExpired]);
 
   const currentQuestion = questions[currentIndex];
   const isLastQuestion = currentIndex >= total - 1;
@@ -139,10 +170,30 @@ export function ShortAnswerSection({
           <span>
             Question {currentIndex + 1} of {total}
           </span>
-          <span>
-            Section {sectionIndex} of {totalSections}
+          <span className="flex items-center gap-3">
+            <span>
+              Section {sectionIndex} of {totalSections}
+            </span>
+            {isCognitive && (
+              <span
+                className={
+                  secondsRemaining > 0 && secondsRemaining <= 60
+                    ? 'font-semibold text-amber-600 dark:text-amber-400'
+                    : timeExpired
+                      ? 'text-muted-foreground'
+                      : ''
+                }
+              >
+                {timeExpired ? 'Time expired' : `${formatTime(secondsRemaining)} left`}
+              </span>
+            )}
           </span>
         </div>
+        {isCognitive && secondsRemaining > 0 && secondsRemaining <= 60 && !timeExpired && (
+          <p className="text-sm text-amber-600 dark:text-amber-400 mb-2 font-medium">
+            Less than 1 minute remaining
+          </p>
+        )}
         <Progress value={progressPercent} className="h-4 sm:h-5 rounded-full shadow-inner" />
       </div>
 

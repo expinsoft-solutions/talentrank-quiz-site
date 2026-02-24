@@ -37,9 +37,7 @@ export default function Home() {
         return;
       }
       const { version, sections = [], questions = [] } = data;
-      const sectionSteps = getOrderedSectionSteps(sections, questions, {
-        excludeCognitive: true,
-      });
+      const sectionSteps = getOrderedSectionSteps(sections, questions, {});
       const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
       if (steps.length > 0) {
         setResumeState({
