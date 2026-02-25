@@ -11,3 +11,4 @@ web/node_modules
 requirements/.~lock.*
 supabase/.temp
 node_modules
+.claude

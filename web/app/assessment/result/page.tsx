@@ -6,6 +6,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { ResultView } from '@/components/quiz';
 import { Loader } from '@/components/ui/loader';
 import type { CompleteResult } from '@/components/quiz/ResultView';
+import type { PublicStripeSettings } from '@/lib/stripe/types';
 
 export default function ResultPage() {
   return (
@@ -29,7 +30,16 @@ function ResultPageContent() {
   } | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
+  const [stripeSettings, setStripeSettings] = useState<PublicStripeSettings | null>(null);
   const reportRequestedRef = useRef(false);
+
+  useEffect(() => {
+    // Fetch stripe settings in parallel (non-blocking)
+    fetch('/api/stripe/settings')
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => { if (data) setStripeSettings(data as PublicStripeSettings); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!assessmentId || !clientToken) {
@@ -139,6 +149,9 @@ function ResultPageContent() {
       userFirstName={result.firstName}
       reportLoading={reportLoading}
       reportError={reportError}
+      stripeSettings={stripeSettings}
+      assessmentId={assessmentId}
+      clientToken={clientToken}
     />
   );
 }

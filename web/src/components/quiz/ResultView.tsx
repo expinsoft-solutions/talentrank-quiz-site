@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import type { PublicStripeSettings } from '@/lib/stripe/types';
 import {
   getAxisDisplayEntries,
   getSabotageProfile,
@@ -26,6 +28,9 @@ interface ResultViewProps {
   userFirstName: string | null;
   reportLoading?: boolean;
   reportError?: string | null;
+  stripeSettings?: PublicStripeSettings | null;
+  assessmentId?: string | null;
+  clientToken?: string | null;
 }
 
 export function ResultView({
@@ -34,7 +39,33 @@ export function ResultView({
   userFirstName,
   reportLoading = false,
   reportError = null,
+  stripeSettings = null,
+  assessmentId = null,
+  clientToken = null,
 }: ResultViewProps) {
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  async function handleBuyNow() {
+    if (!assessmentId || !clientToken) return;
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assessmentId, clientToken }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.url) {
+        console.error('Checkout error:', data?.error ?? 'Unknown error');
+        setCheckoutLoading(false);
+        return;
+      }
+      window.location.href = data.url;
+    } catch {
+      setCheckoutLoading(false);
+    }
+  }
+
   const displayName = userFirstName || 'There';
   const reportRaw = reportText?.trim() ?? '';
   const firstLine = reportRaw.split(/\n/)[0]?.trim() ?? '';
@@ -222,18 +253,44 @@ export function ResultView({
           )}
         </section>
 
-        <section className="rounded-xl border border-border/80 bg-card p-6 sm:p-8 text-center space-y-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Unlock Your Career Growth</h2>
-          <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-            Invest in an advanced report that shows your blockers, traits, and habits that may be holding you back — and get a detailed plan to fix them and succeed in your career.
-          </p>
-          <Button
-            size="lg"
-            className="w-full sm:w-auto min-w-[180px] h-12 font-medium rounded-lg bg-[#4c1d95] hover:bg-[#5b21b6] text-white"
-          >
-            Buy Now
-          </Button>
-        </section>
+        {stripeSettings?.enabled ? (
+          <section className="rounded-xl bg-gradient-to-br from-[#4c1d95] to-[#6d28d9] text-white p-6 sm:p-8 space-y-4">
+            <div className="space-y-2">
+              <h2 className="text-xl sm:text-2xl font-bold">
+                {stripeSettings.productName || 'Unlock Your Career Growth'}
+              </h2>
+              <p className="text-white/80 text-sm max-w-xl">
+                {stripeSettings.productDescription || 'Invest in an advanced report that shows your blockers, traits, and habits that may be holding you back — and get a detailed plan to fix them and succeed in your career.'}
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              {stripeSettings.priceDisplay && (
+                <span className="text-3xl font-bold">{stripeSettings.priceDisplay}</span>
+              )}
+              <Button
+                size="lg"
+                onClick={handleBuyNow}
+                disabled={checkoutLoading || !assessmentId || !clientToken}
+                className="w-full sm:w-auto min-w-[180px] h-12 font-medium rounded-lg bg-white text-[#4c1d95] hover:bg-white/90 border-0"
+              >
+                {checkoutLoading ? 'Redirecting…' : 'Buy Now →'}
+              </Button>
+            </div>
+          </section>
+        ) : (
+          <section className="rounded-xl border border-border/80 bg-card p-6 sm:p-8 text-center space-y-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">Unlock Your Career Growth</h2>
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+              Invest in an advanced report that shows your blockers, traits, and habits that may be holding you back — and get a detailed plan to fix them and succeed in your career.
+            </p>
+            <Button
+              size="lg"
+              className="w-full sm:w-auto min-w-[180px] h-12 font-medium rounded-lg bg-[#4c1d95] hover:bg-[#5b21b6] text-white"
+            >
+              Buy Now
+            </Button>
+          </section>
+        )}
       </main>
     </div>
   );
