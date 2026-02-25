@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { createAssessmentToken } from '@/lib/assessment-token';
-
-const DEFAULT_VERSION = 'v1.0';
+import { getCurrentActiveAssessment } from '@/lib/active-assessment';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -11,7 +10,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const body = typeof req.body === 'object' ? req.body : {};
   const email = typeof body.email === 'string' ? body.email.trim() : '';
   const firstName = typeof body.firstName === 'string' ? body.firstName.trim() || undefined : undefined;
-  const version = typeof body.version === 'string' ? body.version.trim() || DEFAULT_VERSION : DEFAULT_VERSION;
 
   if (!email) {
     return res.status(400).json({ error: 'email is required' });
@@ -23,6 +21,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const currentActiveAssessment = await getCurrentActiveAssessment(supabase);
+    if (!currentActiveAssessment) {
+      return res.status(404).json({ error: 'Active questionnaire not found' });
+    }
+    const version = currentActiveAssessment.version;
+    const questionnaireVersionId = currentActiveAssessment.id;
+
     const normalizedEmail = email.toLowerCase();
     const { data: existingUser } = await supabase
       .from('users')
@@ -52,13 +57,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (updateUserError) {
       return res.status(500).json({ error: 'Failed to save user details' });
     }
-
-    const { data: versionRow } = await supabase
-      .from('assessments')
-      .select('id')
-      .eq('version', version)
-      .single();
-    const questionnaireVersionId = versionRow?.id ?? null;
 
     const clientToken = crypto.randomUUID();
     const { data: assessmentData, error: assessmentError } = await supabase

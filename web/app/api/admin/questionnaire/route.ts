@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getCurrentActiveAssessment } from '@/lib/active-assessment';
 import { NextResponse } from 'next/server';
 
 async function requireAdmin() {
@@ -32,21 +33,15 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: auth.status });
   }
 
-  const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from('assessments')
-    .select('id, questionnaire, version')
-    .eq('version', 'v1.0')
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-  if (!data) {
+  const currentActiveAssessment = await getCurrentActiveAssessment(auth.admin);
+  if (!currentActiveAssessment) {
     return NextResponse.json({ error: 'Questionnaire not found' }, { status: 404 });
   }
 
-  return NextResponse.json({ questionnaire: data.questionnaire, version: data.version });
+  return NextResponse.json({
+    questionnaire: currentActiveAssessment.questionnaire,
+    version: currentActiveAssessment.version,
+  });
 }
 
 export async function PUT(request: Request) {
@@ -66,32 +61,22 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'questionnaire must be an array of sections' }, { status: 400 });
   }
 
-  const supabase = createAdminClient();
-  const { data: existing } = await supabase
-    .from('assessments')
-    .select('id')
-    .eq('version', 'v1.0')
-    .single();
-
-  const payload = { questionnaire: body.questionnaire, version: 'v1.0', language_key: 'en' };
-
-  if (existing?.id != null) {
-    const { data, error } = await supabase
-      .from('assessments')
-      .update(payload)
-      .eq('id', existing.id)
-      .select('id, version')
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ ok: true, id: data?.id, version: data?.version });
+  const admin = createAdminClient();
+  const currentActiveAssessment = await getCurrentActiveAssessment(admin);
+  if (!currentActiveAssessment) {
+    return NextResponse.json({ error: 'Active assessment not found' }, { status: 404 });
   }
 
-  const { data, error } = await supabase
+  const payload = {
+    questionnaire: body.questionnaire,
+    version: currentActiveAssessment.version,
+    language_key: 'en',
+  };
+
+  const { data, error } = await admin
     .from('assessments')
-    .insert(payload)
+    .update(payload)
+    .eq('id', currentActiveAssessment.id)
     .select('id, version')
     .single();
 
