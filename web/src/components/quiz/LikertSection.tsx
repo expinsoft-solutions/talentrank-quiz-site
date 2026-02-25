@@ -10,7 +10,16 @@ import {
   getLikertLabelsForQuestion,
 } from '@/data/personalityQuestions';
 import { shuffleArrayWithSeed } from '@/lib/array';
+import { COGNITIVE_SECTION_ID } from '@/lib/assessment';
 import type { PersonalityAnswer } from '@/types';
+
+const COGNITIVE_TIME_LIMIT_SECONDS = 360;
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
 
 function randomizedAlternating(questions: PersonalityQuestion[], seed: string): PersonalityQuestion[] {
   const positive = shuffleArrayWithSeed(questions.filter((q) => q.keyed === 'positive'), seed + ':pos');
@@ -106,6 +115,29 @@ export function LikertSection({
   const [slideDirection, setSlideDirection] = useState<'forward' | 'back'>('forward');
   const sectionKey = sectionId ?? 'personality_wiring';
   const sectionCopy = SECTION_COPY[sectionKey];
+  const isCognitive = sectionId === COGNITIVE_SECTION_ID;
+  const [secondsRemaining, setSecondsRemaining] = useState(COGNITIVE_TIME_LIMIT_SECONDS);
+  const [timeExpired, setTimeExpired] = useState(false);
+
+  useEffect(() => {
+    if (!isCognitive) return;
+    setSecondsRemaining(COGNITIVE_TIME_LIMIT_SECONDS);
+    setTimeExpired(false);
+  }, [assessmentId, sectionId, isCognitive]);
+
+  useEffect(() => {
+    if (!isCognitive || timeExpired) return;
+    const interval = setInterval(() => {
+      setSecondsRemaining((prev) => {
+        if (prev <= 1) {
+          setTimeExpired(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isCognitive, timeExpired]);
 
   const currentQuestion = orderedQuestions[currentIndex];
   const currentAnswer = currentQuestion
@@ -178,12 +210,32 @@ export function LikertSection({
               <span>
                 Question {currentIndex + 1} of {total}
               </span>
-              {sectionIndex != null && totalSections != null && (
-                <span>
-                  Section {sectionIndex} of {totalSections}
-                </span>
-              )}
+              <span className="flex items-center gap-3">
+                {sectionIndex != null && totalSections != null && (
+                  <span>
+                    Section {sectionIndex} of {totalSections}
+                  </span>
+                )}
+                {isCognitive && (
+                  <span
+                    className={
+                      secondsRemaining > 0 && secondsRemaining <= 60
+                        ? 'font-semibold text-amber-600 dark:text-amber-400'
+                        : timeExpired
+                          ? 'text-muted-foreground'
+                          : ''
+                    }
+                  >
+                    {timeExpired ? 'Time expired' : `${formatTime(secondsRemaining)} left`}
+                  </span>
+                )}
+              </span>
             </div>
+            {isCognitive && secondsRemaining > 0 && secondsRemaining <= 60 && !timeExpired && (
+              <p className="text-sm text-amber-600 dark:text-amber-400 mb-2 font-medium">
+                Less than 1 minute remaining
+              </p>
+            )}
             {sectionCopy && (
               <div className="mb-3">
                 <p className="text-sm font-medium text-indigo-900/90 dark:text-foreground leading-snug">

@@ -10,6 +10,7 @@ export function parseQuestionnaire(questionnaire: unknown): {
   for (const row of questionnaire) {
     const s = row as Record<string, unknown>;
     const sectionId = typeof s.id === 'string' ? s.id : String(s.id);
+    const enabled = s.enabled === undefined ? true : s.enabled === true;
     sections.push({
       id: sectionId,
       name: typeof s.name === 'string' ? s.name : '',
@@ -17,6 +18,7 @@ export function parseQuestionnaire(questionnaire: unknown): {
       isTimed: typeof s.isTimed === 'boolean' ? s.isTimed : null,
       timeLimitSeconds: typeof s.time_limit_seconds === 'number' ? s.time_limit_seconds : null,
       purpose: typeof s.purpose === 'string' ? s.purpose : null,
+      enabled,
     });
     const qList = Array.isArray(s.questions) ? s.questions : [];
     for (const qRow of qList) {

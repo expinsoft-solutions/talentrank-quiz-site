@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import { GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 
 interface Section {
   id: string;
   name: string;
   order_index: number;
+  enabled?: boolean;
   is_timed?: boolean;
   time_limit_seconds?: number | null;
   purpose?: string | null;
@@ -292,7 +294,12 @@ export default function AdminQuestionsPage() {
         if (!res.ok) throw new Error('Failed to load');
         return res.json();
       })
-      .then((d) => setQuestionnaire(d.questionnaire ?? []))
+      .then((d) => {
+        const raw = (d.questionnaire ?? []) as Section[];
+        setQuestionnaire(
+          raw.map((s) => ({ ...s, enabled: s.enabled !== false }))
+        );
+      })
       .catch(() => toast.error('Failed to load questionnaire'))
       .finally(() => setLoading(false));
   }, []);
@@ -300,10 +307,14 @@ export default function AdminQuestionsPage() {
   async function handleSave() {
     setSaving(true);
     try {
+      const payload = questionnaire.map((s) => ({
+        ...s,
+        enabled: s.enabled !== false,
+      }));
       const res = await fetch('/api/admin/questionnaire', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questionnaire }),
+        body: JSON.stringify({ questionnaire: payload }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Failed to save');
@@ -359,36 +370,56 @@ export default function AdminQuestionsPage() {
 
   return (
     <div className="w-full max-w-6xl space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Question Bank</h1>
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving…' : 'Save changes'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? 'Saving…' : 'Save changes'}
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-4">
         {questionnaire.map((section) => (
           <div
             key={section.id}
-            className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden"
+            className={`rounded-lg border overflow-hidden transition-opacity ${
+              section.enabled === false
+                ? 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 opacity-80'
+                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900'
+            }`}
           >
-            <button
-              type="button"
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-              onClick={() =>
-                setEditingSection(editingSection === section.id ? null : section.id)
-              }
-            >
-              <div>
-                <span className="font-medium">{section.name}</span>
-                <span className="text-sm text-slate-500 ml-2">
-                  ({section.questions.length} questions)
+            <div className="w-full flex items-center justify-between gap-4 p-4">
+              <button
+                type="button"
+                className="flex-1 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors rounded -m-2 p-2"
+                onClick={() =>
+                  setEditingSection(editingSection === section.id ? null : section.id)
+                }
+              >
+                <div>
+                  <span className="font-medium">{section.name}</span>
+                  <span className="text-sm text-slate-500 ml-2">
+                    ({section.questions.length} questions)
+                  </span>
+                </div>
+                <span className="text-slate-400 shrink-0">
+                  {editingSection === section.id ? '−' : '+'}
                 </span>
+              </button>
+              <div
+                className="flex items-center gap-2 shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="text-xs text-slate-500">Enabled</span>
+                <Switch
+                  checked={section.enabled !== false}
+                  onCheckedChange={(checked) =>
+                    updateSection(section.id, { enabled: checked })
+                  }
+                />
               </div>
-              <span className="text-slate-400">
-                {editingSection === section.id ? '−' : '+'}
-              </span>
-            </button>
+            </div>
 
             {editingSection === section.id && (
               <div className="border-t border-slate-200 dark:border-slate-800 p-4 space-y-4">

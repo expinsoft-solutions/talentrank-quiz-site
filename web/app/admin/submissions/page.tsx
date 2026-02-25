@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { CloudUpload } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface Submission {
   id: string;
@@ -22,6 +24,7 @@ export default function AdminSubmissionsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [exportingAll, setExportingAll] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -40,6 +43,40 @@ export default function AdminSubmissionsPage() {
       .finally(() => setLoading(false));
   }, [statusFilter]);
 
+  async function handleExportAll() {
+    if (items.length === 0) {
+      toast.error('No submissions to export');
+      return;
+    }
+    setExportingAll(true);
+    try {
+      const res = await fetch('/api/admin/submissions/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assessmentIds: items.map((i) => i.id) }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error ?? 'Export failed');
+        return;
+      }
+      const results = data.results ?? [];
+      const ok = results.filter((r: { ok: boolean }) => r.ok).length;
+      const failed = results.filter((r: { ok: boolean }) => !r.ok).length;
+      if (failed === 0) {
+        toast.success(`Exported ${ok} submission${ok !== 1 ? 's' : ''} to Airtable`);
+      } else if (ok === 0) {
+        toast.error(`Export failed for all ${failed} submission${failed !== 1 ? 's' : ''}`);
+      } else {
+        toast.warning(`Exported ${ok}, failed ${failed}`);
+      }
+    } catch {
+      toast.error('Export failed');
+    } finally {
+      setExportingAll(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -52,7 +89,21 @@ export default function AdminSubmissionsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Submissions</h1>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            disabled={exportingAll || items.length === 0}
+            onClick={handleExportAll}
+            className="shadow-sm bg-indigo-600 hover:bg-indigo-700 text-white border-0 gap-2"
+          >
+            {exportingAll ? (
+              <Loader size="sm" className="shrink-0" />
+            ) : (
+              <CloudUpload className="h-4 w-4 shrink-0" />
+            )}
+            <span>{exportingAll ? 'Exporting…' : 'Export to Airtable'}</span>
+          </Button>
           <Button
             variant={statusFilter === '' ? 'default' : 'outline'}
             size="sm"

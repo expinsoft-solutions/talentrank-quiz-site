@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ComponentType } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   CollectUserScreen,
-  LikertSection,
   ResultView,
   ShortAnswerSection,
+  PersonalityWiringSection,
+  SelfSabotageSection,
+  OptimalEnvironmentSection,
+  CognitiveArchitectureSection,
 } from "@/components/quiz";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
@@ -14,8 +17,29 @@ import { useDevice } from "@/hooks/use-device";
 import { getOrderedSectionSteps, getFallbackSectionSteps } from "@/lib/assessment";
 import { getResumeState, setResumeState, clearResumeState } from "@/lib/resume-storage";
 import { getVslConfig } from "@/lib/site-settings";
-import type { DbSection, DbQuestion, PersonalityAnswer } from "@/types";
+import type { DbSection, DbQuestion } from "@/types";
 import type { SectionStep } from "@/lib/assessment";
+
+const SECTION_COMPONENTS: Record<
+  string,
+  ComponentType<{
+    sectionId: string;
+    sectionIndex: number;
+    totalSections: number;
+    questions: SectionStep['questions'];
+    initialAnswers?: Record<string, string | number>;
+    initialQuestionIndex?: number;
+    onComplete: () => void;
+    onProgress?: (sectionIndex: number, questionIndex: number) => void;
+    onResponseSaved?: (questionId: string, answerNumeric?: number, answerRaw?: string) => void;
+  }>
+> = {
+  short_answer: ShortAnswerSection,
+  personality_wiring: PersonalityWiringSection,
+  self_sabotage: SelfSabotageSection,
+  optimal_environment: OptimalEnvironmentSection,
+  cognitive_architecture: CognitiveArchitectureSection,
+};
 
 type Phase = "start" | "section" | "collect_user" | "complete" | "no_questions";
 
@@ -58,7 +82,7 @@ export default function AssessmentPage() {
       setResuming(false);
       return;
     }
-    const sectionSteps = getOrderedSectionSteps(stored.sections, stored.questions, { excludeCognitive: true });
+    const sectionSteps = getOrderedSectionSteps(stored.sections, stored.questions, {});
     const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
     setSession({
       version: stored.version,
@@ -314,78 +338,34 @@ export default function AssessmentPage() {
     const step = steps[currentSectionIndex];
     if (!step) return null;
 
-    const stepQuestionIds = step.questions.map((q) => q.id);
-    const initialAnswersForStep: PersonalityAnswer[] =
-      step.type === "likert"
-        ? stepQuestionIds
-            .filter((id) => assessmentResponses[id]?.answerNumeric != null)
-            .map((id) => ({ id, answer: assessmentResponses[id].answerNumeric! }))
-        : [];
-    const initialValuesForStep: Record<string, string> =
-      step.type === "text"
-        ? stepQuestionIds.reduce<Record<string, string>>((acc, id) => {
-            const raw = assessmentResponses[id]?.answerRaw;
-            if (raw != null) acc[id] = raw;
-            return acc;
-          }, {})
-        : {};
-
-    if (step.type === "likert") {
-      return (
-        <div
-          className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden"
-          key={`section-${session.version}-${currentSectionIndex}`}
-        >
-          <LikertSection
-            assessmentId={null}
-            clientToken={null}
-            questions={step.questions}
-            sectionId={step.sectionId}
-            sectionIndex={step.orderIndex}
-            totalSections={steps.length}
-            initialQuestionIndex={questionIndex}
-            initialAnswers={initialAnswersForStep}
-            onComplete={(_answers: PersonalityAnswer[]) => handleSectionComplete()}
-            onPrevious={handleSectionPrevious}
-            onProgress={handleSectionProgress}
-            onResponseSaved={(questionId, answerNumeric) =>
-              handleResponseSaved(questionId, answerNumeric)
-            }
-            isFirstSection={currentSectionIndex === 0}
-            isLastSection={currentSectionIndex === steps.length - 1}
-          />
-        </div>
-      );
+    const initialAnswers: Record<string, string | number> = {};
+    for (const q of step.questions) {
+      const r = assessmentResponses[q.id];
+      if (r?.answerNumeric != null) initialAnswers[q.id] = r.answerNumeric;
+      else if (r?.answerRaw != null) initialAnswers[q.id] = r.answerRaw;
     }
 
-    if (step.type === "text") {
-      return (
-        <div
-          className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden"
-          key={`section-${session.version}-${currentSectionIndex}`}
-        >
-          <ShortAnswerSection
-            assessmentId={null}
-            clientToken={null}
-            questions={step.questions}
-            sectionIndex={step.orderIndex}
-            totalSections={steps.length}
-            initialQuestionIndex={questionIndex}
-            initialValues={initialValuesForStep}
-            onComplete={handleSectionComplete}
-            onPrevious={handleSectionPrevious}
-            onProgress={handleSectionProgress}
-            onResponseSaved={(questionId, answerRaw) =>
-              handleResponseSaved(questionId, undefined, answerRaw)
-            }
-            isFirstSection={currentSectionIndex === 0}
-            isLastSection={currentSectionIndex === steps.length - 1}
-          />
-        </div>
-      );
-    }
+    const SectionComponent =
+      SECTION_COMPONENTS[step.sectionId] ?? ShortAnswerSection;
 
-    return null;
+    return (
+      <div
+        className="min-h-screen min-h-[100dvh] bg-background w-full overflow-x-hidden"
+        key={`section-${session.version}-${currentSectionIndex}`}
+      >
+        <SectionComponent
+          sectionId={step.sectionId}
+          sectionIndex={step.orderIndex}
+          totalSections={steps.length}
+          questions={step.questions}
+          initialAnswers={initialAnswers}
+          initialQuestionIndex={questionIndex}
+          onComplete={handleSectionComplete}
+          onProgress={handleSectionProgress}
+          onResponseSaved={handleResponseSaved}
+        />
+      </div>
+    );
   }
 
   if (phase === "collect_user" && session) {
