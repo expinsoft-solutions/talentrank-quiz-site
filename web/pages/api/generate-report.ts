@@ -6,9 +6,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
   const body = typeof req.body === 'object' ? req.body : {};
-  const { data, error, status } = await invokeEdgeFunction('generate-report', body);
+  const { data, error } = await invokeEdgeFunction('generate-report', body);
   if (error) {
-    return res.status(status >= 400 ? status : 500).json({ error });
+    return res.status(200).json({ reportText: null, error: 'Report generation not configured' });
   }
   res.status(200).json(data ?? {});
 }

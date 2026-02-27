@@ -39,8 +39,8 @@ declare global {
 
 function VslContent() {
   const searchParams = useSearchParams();
-  const urlAssessmentId = searchParams.get('assessmentId');
-  const urlClientToken = searchParams.get('clientToken');
+  const urlAssessmentId = searchParams.get('assessmentId') ?? searchParams.get('assessment_id');
+  const urlClientToken = searchParams.get('clientToken') ?? searchParams.get('client_token');
   const [ids, setIds] = useState<{ assessmentId: string; clientToken: string } | null>(() =>
     urlAssessmentId && urlClientToken ? { assessmentId: urlAssessmentId, clientToken: urlClientToken } : null
   );
@@ -54,6 +54,7 @@ function VslContent() {
   const playerRef = useRef<{ destroy: () => void } | null>(null);
   const pendingHandledRef = useRef(false);
   const reportCheckDoneRef = useRef(false);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const assessmentId = ids?.assessmentId ?? urlAssessmentId;
   const clientToken = ids?.clientToken ?? urlClientToken;
@@ -127,11 +128,45 @@ function VslContent() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ assessmentId: data.assessmentId, clientToken: data.clientToken }),
           })
-            .then(async (r) => {
-              const d = await r.json().catch(() => ({}));
-              if (r.ok) setReportReady(true);
+            .then((r) => r.json().catch(() => ({})))
+            .then((d) => {
+              if (d?.error === 'Report generation not configured' || (typeof d?.reportText === 'string' && d.reportText?.trim())) {
+                setReportReady(true);
+              }
             })
             .catch(() => {});
+          const aid = data.assessmentId;
+          const ctk = data.clientToken;
+          const POLL_MS = 4500;
+          const MAX = 60;
+          let n = 0;
+          const stop = () => {
+            if (pollIntervalRef.current) {
+              clearInterval(pollIntervalRef.current);
+              pollIntervalRef.current = null;
+            }
+          };
+          const poll = () => {
+            n += 1;
+            if (n > MAX) {
+              stop();
+              return;
+            }
+            fetch('/api/get-assessment-result', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ assessmentId: aid, clientToken: ctk }),
+            })
+              .then((r) => r.json().catch(() => ({})))
+              .then((d) => {
+                if (typeof d?.reportText === 'string' && d.reportText.trim()) {
+                  stop();
+                  setReportReady(true);
+                }
+              });
+          };
+          pollIntervalRef.current = setInterval(poll, POLL_MS);
+          poll();
         }
         setSubmitting(false);
       })
@@ -155,29 +190,49 @@ function VslContent() {
   useEffect(() => {
     if (!urlAssessmentId || !urlClientToken || !assessmentId || !clientToken || reportCheckDoneRef.current) return;
     reportCheckDoneRef.current = true;
-    fetch('/api/get-assessment-result', {
+    fetch('/api/generate-report', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ assessmentId, clientToken }),
     })
-      .then((res) => res.json().catch(() => ({})))
+      .then((r) => r.json().catch(() => ({})))
       .then((data) => {
-        if (typeof data?.reportText === 'string' && data.reportText.trim()) {
+        if (data?.error === 'Report generation not configured' || (typeof data?.reportText === 'string' && data.reportText?.trim())) {
           setReportReady(true);
-          return;
         }
-        fetch('/api/generate-report', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ assessmentId, clientToken }),
-        })
-          .then(async (r) => {
-            const d = await r.json().catch(() => ({}));
-            if (r.ok) setReportReady(true);
-          })
-          .catch(() => {});
       })
       .catch(() => {});
+    const POLL_MS = 4500;
+    const MAX = 60;
+    let n = 0;
+    const stop = () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+    const poll = () => {
+      n += 1;
+      if (n > MAX) {
+        stop();
+        return;
+      }
+      fetch('/api/get-assessment-result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assessmentId, clientToken }),
+      })
+        .then((r) => r.json().catch(() => ({})))
+        .then((data) => {
+          if (typeof data?.reportText === 'string' && data.reportText.trim()) {
+            stop();
+            setReportReady(true);
+          }
+        });
+    };
+    pollIntervalRef.current = setInterval(poll, POLL_MS);
+    poll();
+    return () => stop();
   }, [urlAssessmentId, urlClientToken, assessmentId, clientToken]);
 
   useEffect(() => {
@@ -232,6 +287,12 @@ function VslContent() {
       delete window.onYouTubeIframeAPIReady;
     };
   }, [embedUrl]);
+
+  useEffect(() => {
+    if (reportReady && assessmentId && clientToken) {
+      window.location.href = `/assessment/result?assessmentId=${encodeURIComponent(assessmentId)}&clientToken=${encodeURIComponent(clientToken)}`;
+    }
+  }, [reportReady, assessmentId, clientToken]);
 
   const resultHref =
     assessmentId && clientToken

@@ -7,28 +7,31 @@ export interface CurrentActiveAssessment {
   questionnaire: unknown;
 }
 
-const DEFAULT_VERSION = 'v1.0';
+
+function hasQuestionnaireContent(q: unknown): boolean {
+  if (!Array.isArray(q) || q.length === 0) return false;
+  return q.some((s: unknown) => Array.isArray((s as Record<string, unknown>)?.questions));
+}
 
 export async function getCurrentActiveAssessment(
   supabase?: SupabaseClient
 ): Promise<CurrentActiveAssessment | null> {
   const client = supabase ?? createServiceRoleClient();
-  const { data: settingRow } = await client
-    .from('site_settings')
-    .select('value')
-    .eq('key', 'active_assessment_version')
-    .single();
-  const version = typeof settingRow?.value === 'string' ? settingRow.value : DEFAULT_VERSION;
-  const activeVersion = version || DEFAULT_VERSION;
-  const { data } = await client
+  const { data: rows } = await client
     .from('assessments')
     .select('id, version, questionnaire')
-    .eq('version', activeVersion)
-    .single();
-  if (!data?.id) return null;
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  const latestWithContent = Array.isArray(rows)
+    ? rows.find((r) => hasQuestionnaireContent(r.questionnaire))
+    : null;
+  const chosen = latestWithContent ?? rows?.[0];
+
+  if (!chosen?.id) return null;
   return {
-    id: data.id,
-    version: data.version ?? activeVersion,
-    questionnaire: data.questionnaire,
+    id: chosen.id,
+    version: chosen.version ?? '',
+    questionnaire: chosen.questionnaire,
   };
 }

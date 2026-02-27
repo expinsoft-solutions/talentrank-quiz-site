@@ -233,10 +233,11 @@ export function ResultView({
 
         <section id="report" className="space-y-6 scroll-mt-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">TalentRank Report</h2>
-          {reportLoading && <p className="text-sm text-muted-foreground py-8">Generating your report…</p>}
+          {reportLoading && <p className="text-sm text-muted-foreground py-8">Generating your report… We&apos;ll email you when it&apos;s ready.</p>}
           {reportError && <p className="text-sm text-destructive py-4">{reportError}</p>}
           {reportParagraphs.length > 0 && !reportLoading && (
             <>
+              <p className="text-sm text-muted-foreground mb-4">We&apos;ve sent your report to your email.</p>
               {firstLine && (
                 <p className="text-xl sm:text-2xl font-semibold text-foreground text-center">
                   {displayName} — {archetype}

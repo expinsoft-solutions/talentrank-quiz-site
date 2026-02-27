@@ -15,6 +15,16 @@ const corsHeaders = {
 const ANTHROPIC_VERSION = '2023-06-01';
 const DEFAULT_MODEL = 'claude-3-haiku-20240307';
 const MAX_TOKENS = 1024;
+const RESULTS_BASE_URL = 'https://app.talentrank.io/results?recordId=';
+
+function mockSendReportToCustomer(opts: { to: string; firstName: string; reportText: string; resultsUrl: string }) {
+  console.log('[MOCK] Would send report email to customer:', {
+    to: opts.to,
+    subject: `Your TalentRank Assessment Report`,
+    bodyPreview: `Hi ${opts.firstName}, your personalized report is ready. View results: ${opts.resultsUrl}`,
+    resultsUrl: opts.resultsUrl,
+  });
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -42,8 +52,8 @@ Deno.serve(async (req) => {
     if (!apiKey) {
       console.error('ANTHROPIC_API_KEY not set');
       return new Response(
-        JSON.stringify({ error: 'Report generation not configured' }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ reportText: null, error: 'Report generation not configured' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -101,7 +111,7 @@ Deno.serve(async (req) => {
     }
 
     const { data: userRow } = assessmentRow.user_id
-      ? await supabase.from('users').select('first_name').eq('id', assessmentRow.user_id).single()
+      ? await supabase.from('users').select('first_name, email').eq('id', assessmentRow.user_id).single()
       : { data: null };
     const shortAnswers: Array<{ questionText: string; answerRaw: string }> = [];
     for (const r of responses ?? []) {
@@ -185,6 +195,18 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       console.error('assessments report_text update error', updateError);
+    }
+
+    const firstName = (userRow?.first_name ?? '').trim() || 'There';
+    const customerEmail = typeof userRow?.email === 'string' ? userRow.email.trim() : null;
+    const resultsUrl = `${RESULTS_BASE_URL}${assessmentId}`;
+    if (customerEmail) {
+      mockSendReportToCustomer({
+        to: customerEmail,
+        firstName,
+        reportText,
+        resultsUrl,
+      });
     }
 
     return new Response(

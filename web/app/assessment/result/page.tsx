@@ -32,6 +32,7 @@ function ResultPageContent() {
   const [reportError, setReportError] = useState<string | null>(null);
   const [stripeSettings, setStripeSettings] = useState<PublicStripeSettings | null>(null);
   const reportRequestedRef = useRef(false);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     // Fetch stripe settings in parallel (non-blocking)
@@ -100,27 +101,65 @@ function ResultPageContent() {
     reportRequestedRef.current = true;
     setReportLoading(true);
     setReportError(null);
+
+    const stopPolling = () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+
     fetch('/api/generate-report', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ assessmentId, clientToken }),
     })
-      .then(async (res) => {
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          setReportError(typeof data?.error === 'string' ? data.error : 'Failed to generate report');
-          return;
-        }
-        if (data?.error) {
-          setReportError(data.error);
-          return;
-        }
-        if (typeof data?.reportText === 'string') {
+      .then((res) => res.json().catch(() => ({})))
+      .then((data) => {
+        if (data?.error === 'Report generation not configured') {
+          stopPolling();
+          setReportError('Report generation is not configured.');
+          setReportLoading(false);
+        } else if (typeof data?.reportText === 'string' && data.reportText?.trim()) {
+          stopPolling();
           setResult((prev) => (prev ? { ...prev, reportText: data.reportText } : null));
+          setReportLoading(false);
         }
       })
-      .catch(() => setReportError('Failed to generate report'))
-      .finally(() => setReportLoading(false));
+      .catch(() => {});
+
+    const POLL_INTERVAL_MS = 4500;
+    const MAX_POLLS = 60;
+    let pollCount = 0;
+
+    const poll = () => {
+      pollCount += 1;
+      if (pollCount > MAX_POLLS) {
+        stopPolling();
+        setReportError('Report is taking longer than expected. Please check your email or refresh in a few minutes.');
+        setReportLoading(false);
+        return;
+      }
+      fetch('/api/get-assessment-result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assessmentId, clientToken }),
+      })
+        .then((res) => res.json().catch(() => ({})))
+        .then((data) => {
+          const reportText = typeof data?.reportText === 'string' ? data.reportText : null;
+          if (reportText != null && reportText.trim() !== '') {
+            stopPolling();
+            setResult((prev) => (prev ? { ...prev, reportText } : null));
+            setReportLoading(false);
+          }
+        });
+    };
+
+    pollIntervalRef.current = setInterval(poll, POLL_INTERVAL_MS);
+    poll();
+
+    return () => stopPolling();
   }, [result, assessmentId, clientToken]);
 
   if (loading) {

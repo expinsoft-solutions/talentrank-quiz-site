@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Load questionnaire JSON into assessments (v1.0).
+ * Load questionnaire JSON into the latest assessment (or create new if empty).
  * Canonical source: requirements/questionnaire_v1.json (or path as first arg).
  * Run from web: npm run questionnaire:load
  *
@@ -56,20 +56,40 @@ async function main() {
   }
 
   const supabase = createClient(url, key);
-  const { data, error } = await supabase
+  const { data: rows } = await supabase
     .from('assessments')
-    .upsert(
-      { questionnaire, version: 'v1.0', language_key: 'en' },
-      { onConflict: 'version' }
-    )
-    .select('id, version')
-    .single();
+    .select('id, version, questionnaire')
+    .order('created_at', { ascending: false })
+    .limit(10);
 
-  if (error) {
-    console.error('Supabase error:', error.message);
-    process.exit(1);
+  const hasContent = (q) =>
+    Array.isArray(q) && q.length > 0 && q.some((s) => Array.isArray(s?.questions));
+  const target = Array.isArray(rows) ? rows.find((r) => hasContent(r.questionnaire)) ?? rows?.[0] : null;
+
+  if (!target?.id) {
+    const { data: inserted, error: insertErr } = await supabase
+      .from('assessments')
+      .insert({ questionnaire, version: `imported-${Date.now()}`, language_key: 'en' })
+      .select('id, version')
+      .single();
+    if (insertErr) {
+      console.error('Supabase error:', insertErr.message);
+      process.exit(1);
+    }
+    console.log('Created new assessment:', inserted?.version, '(id:', inserted?.id, ')');
+  } else {
+    const { data, error } = await supabase
+      .from('assessments')
+      .update({ questionnaire })
+      .eq('id', target.id)
+      .select('id, version')
+      .single();
+    if (error) {
+      console.error('Supabase error:', error.message);
+      process.exit(1);
+    }
+    console.log('Updated assessment:', data?.version, '(id:', data?.id, ')');
   }
-  console.log('Loaded questionnaire into assessments:', data?.version, '(id:', data?.id, ')');
 }
 
 main();

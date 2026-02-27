@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const quizKey = typeof assessmentData?.version === 'string' ? assessmentData.version : 'v1.0';
+    const quizKey = typeof assessmentData?.version === 'string' ? assessmentData.version : 'unknown';
     const { data: existingRow } = await supabase
       .from('user_quiz_attempt_counts')
       .select('attempt_count')

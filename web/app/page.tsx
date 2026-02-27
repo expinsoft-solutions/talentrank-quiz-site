@@ -41,7 +41,7 @@ export default function Home() {
       const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
       if (steps.length > 0) {
         setResumeState({
-          version: version ?? 'v1.0',
+          version: version ?? '',
           phase: 'section',
           sectionIndex: 0,
           questionIndex: 0,

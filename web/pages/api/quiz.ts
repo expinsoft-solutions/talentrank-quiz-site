@@ -30,6 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       questions = parsed.questions.filter((q) => q.active !== false);
     }
 
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.status(200).json({ version, sections, questions });
   } catch {
     res.status(500).json({ error: 'Internal server error' });
