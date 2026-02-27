@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { getResumeState, setResumeState, clearResumeState } from '@/lib/resume-storage';
 import { getOrderedSectionSteps, getFallbackSectionSteps } from '@/lib/assessment';
+import { SiteHeader } from '@/components/SiteHeader';
 
 export default function Home() {
   const router = useRouter();
@@ -62,10 +63,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center justify-between px-4 sm:px-6">
-          <img src="/logo.png" alt="TalentRank" className="h-8 w-auto object-contain" />
+      <SiteHeader
+        rightAction={
           <Button
             size="sm"
             onClick={hasResume ? () => router.push('/assessment') : () => handleStart()}
@@ -81,8 +80,8 @@ export default function Home() {
               'Reveal My TalentRank'
             )}
           </Button>
-        </div>
-      </header>
+        }
+      />
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border/40 bg-gradient-to-b from-indigo-50/80 via-background to-background dark:from-indigo-950/20 dark:via-background dark:to-background">

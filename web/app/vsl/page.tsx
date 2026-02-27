@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { getVslConfig } from '@/lib/site-settings';
+import { SiteHeader } from '@/components/SiteHeader';
 
 const PENDING_KEY = 'talentrank_pending_submit';
 
@@ -305,9 +306,8 @@ function VslContent() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-background flex flex-col">
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center justify-between px-4 sm:px-6">
-          <img src="/logo.png" alt="TalentRank" className="h-8 w-auto object-contain" />
+      <SiteHeader
+        rightAction={
           <Button
             size="sm"
             className="rounded-lg bg-[#4c1d95] hover:bg-[#5b21b6] text-white font-medium"
@@ -315,8 +315,8 @@ function VslContent() {
           >
             <Link href="/">Reveal My TalentRank</Link>
           </Button>
-        </div>
-      </header>
+        }
+      />
 
       <main className="flex-1 w-full flex flex-col items-center px-4 sm:px-6 py-8 sm:py-12">
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground text-center mb-2">

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { PublicStripeSettings } from '@/lib/stripe/types';
+import { SiteHeader } from '@/components/SiteHeader';
 import {
   getAxisDisplayEntries,
   getSabotageProfile,
@@ -93,15 +94,14 @@ export function ResultView({
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-background flex flex-col">
-      <header className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 h-14 bg-[#4c1d95] text-white shrink-0">
-        <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="" className="h-8 w-auto object-contain" />
-          <span className="font-semibold text-white">TalentRank</span>
-        </div>
-        <Button size="sm" className="bg-white/20 hover:bg-white/30 text-white border-0 font-medium rounded-lg" asChild>
-          <a href="#report">Reveal My TalentRank</a>
-        </Button>
-      </header>
+      <SiteHeader
+        variant="purple"
+        rightAction={
+          <Button size="sm" className="bg-white/20 hover:bg-white/30 text-white border-0 font-medium rounded-lg" asChild>
+            <a href="#report">Reveal My TalentRank</a>
+          </Button>
+        }
+      />
 
       <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col gap-10 sm:gap-14 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <p className="text-center text-sm text-muted-foreground">
