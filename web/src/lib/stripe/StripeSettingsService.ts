@@ -30,18 +30,30 @@ function parseBool(v: unknown): boolean {
   return v === true || v === 'true';
 }
 
+function envFallback<K extends keyof StripeSettings>(dbVal: string, envKey: string): string {
+  if (dbVal) return dbVal;
+  const v = process.env[envKey];
+  return typeof v === 'string' ? v.trim() : '';
+}
+
+function envFallbackBool(dbVal: boolean, envKey: string): boolean {
+  if (dbVal) return true;
+  const v = process.env[envKey];
+  return v === 'true' || v === '1';
+}
+
 function rowsToSettings(rows: { key: string; value: unknown }[]): StripeSettings {
   const map = new Map<string, unknown>();
   for (const row of rows) map.set(row.key, row.value);
   return {
-    enabled: parseBool(map.get('stripe_enabled')),
-    secretKey: parseStr(map.get('stripe_secret_key')),
-    publishableKey: parseStr(map.get('stripe_publishable_key')),
-    webhookSecret: parseStr(map.get('stripe_webhook_secret')),
-    priceId: parseStr(map.get('stripe_price_id')),
-    productName: parseStr(map.get('stripe_product_name')),
-    productDescription: parseStr(map.get('stripe_product_description')),
-    priceDisplay: parseStr(map.get('stripe_price_display')),
+    enabled: envFallbackBool(parseBool(map.get('stripe_enabled')), 'STRIPE_ENABLED'),
+    secretKey: envFallback(parseStr(map.get('stripe_secret_key')), 'STRIPE_SECRET_KEY'),
+    publishableKey: envFallback(parseStr(map.get('stripe_publishable_key')), 'STRIPE_PUBLISHABLE_KEY'),
+    webhookSecret: envFallback(parseStr(map.get('stripe_webhook_secret')), 'STRIPE_WEBHOOK_SECRET'),
+    priceId: envFallback(parseStr(map.get('stripe_price_id')), 'STRIPE_PRICE_ID'),
+    productName: envFallback(parseStr(map.get('stripe_product_name')), 'STRIPE_PRODUCT_NAME'),
+    productDescription: envFallback(parseStr(map.get('stripe_product_description')), 'STRIPE_PRODUCT_DESCRIPTION'),
+    priceDisplay: envFallback(parseStr(map.get('stripe_price_display')), 'STRIPE_PRICE_DISPLAY'),
   };
 }
 

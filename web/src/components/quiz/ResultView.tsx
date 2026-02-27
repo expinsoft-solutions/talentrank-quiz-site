@@ -286,9 +286,11 @@ export function ResultView({
             </p>
             <Button
               size="lg"
+              onClick={handleBuyNow}
+              disabled={checkoutLoading || !assessmentId || !clientToken}
               className="w-full sm:w-auto min-w-[180px] h-12 font-medium rounded-lg bg-[#4c1d95] hover:bg-[#5b21b6] text-white"
             >
-              Buy Now
+              {checkoutLoading ? 'Redirecting…' : 'Buy Now'}
             </Button>
           </section>
         )}
