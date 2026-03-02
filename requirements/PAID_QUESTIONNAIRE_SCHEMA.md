@@ -55,4 +55,4 @@ Each variant (`free` or `paid`) is an array of sections. Each section has:
 
 - `GET /api/quiz` – free quiz (parses `questionnaire.free`)
 - `GET /api/quiz?type=paid` – paid quiz (parses `questionnaire.paid`)
-- `/onboarding` – uses paid questionnaire
+- `/blueprint` – uses paid questionnaire (Blueprint questions after purchase)

@@ -11,7 +11,7 @@ import {
   getLikertLabelsForQuestion,
 } from '@/data/personalityQuestions';
 
-const MIN_TEXT_LENGTH = 10;
+const MIN_TEXT_LENGTH = 5;
 const MAX_TEXT_LENGTH = 2000;
 
 function getCircleSize(index: number, total: number): string {

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -18,10 +18,22 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const assessmentId = searchParams.get('assessmentId');
   const clientToken = searchParams.get('clientToken');
+  const sessionId = searchParams.get('session_id');
+  const confirmCalledRef = useRef(false);
 
-  const onboardingHref =
+  useEffect(() => {
+    if (!sessionId || confirmCalledRef.current) return;
+    confirmCalledRef.current = true;
+    fetch('/api/stripe/confirm-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId }),
+    }).catch(() => {});
+  }, [sessionId]);
+
+  const blueprintHref =
     assessmentId && clientToken
-      ? `/onboarding?assessmentId=${encodeURIComponent(assessmentId)}&clientToken=${encodeURIComponent(clientToken)}`
+      ? `/blueprint?assessmentId=${encodeURIComponent(assessmentId)}&clientToken=${encodeURIComponent(clientToken)}${sessionId ? `&session_id=${encodeURIComponent(sessionId)}` : ''}`
       : null;
 
   return (
@@ -46,9 +58,9 @@ function PaymentSuccessContent() {
         </div>
 
         <div className="flex flex-wrap justify-center gap-3">
-          {onboardingHref ? (
+          {blueprintHref ? (
             <Button asChild className="bg-violet-700 hover:bg-violet-800 text-white h-12 px-8 rounded-lg font-medium">
-              <Link href={onboardingHref}>Start Quiz Now</Link>
+              <Link href={blueprintHref}>Start Quiz Now</Link>
             </Button>
           ) : (
             <div className="space-y-2">

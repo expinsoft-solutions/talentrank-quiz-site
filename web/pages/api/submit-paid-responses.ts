@@ -52,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(404).json({ error: 'Assessment not found' });
   }
   if (!attempt.is_paid) {
-    return res.status(403).json({ error: 'Payment required to submit onboarding questions' });
+    return res.status(403).json({ error: 'Payment required to submit Blueprint questions' });
   }
 
   const paidResponses: Record<string, { answerNumeric?: number; answerRaw?: string }> = {};

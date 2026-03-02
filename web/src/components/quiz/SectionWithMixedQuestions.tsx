@@ -67,13 +67,13 @@ export function SectionWithMixedQuestions({
   }, []);
 
   useEffect(() => {
-    setAnswers(initialAnswers);
+    setAnswers(initialAnswers ?? {});
     if (skipSyncRef.current) {
       skipSyncRef.current = false;
     } else {
       setCurrentIndex(Math.min(initialQuestionIndex, Math.max(0, total - 1)));
     }
-  }, [sectionId, initialAnswers, initialQuestionIndex, total]);
+  }, [sectionId, initialQuestionIndex, total]);
 
   useEffect(() => {
     if (!hasTimer) return;
