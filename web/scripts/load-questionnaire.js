@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Load questionnaire JSON into the latest assessment (or create new if empty).
- * Canonical source: requirements/questionnaire_v1.json (or path as first arg).
+ * Load unified questionnaire JSON (free + paid) into assessments.
+ * Canonical source: requirements/questionnaire.json with { free: [...], paid: [...] }
  * Run from web: npm run questionnaire:load
  *
  * Requires: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (e.g. in web/.env.local)
@@ -39,10 +39,10 @@ async function main() {
     process.exit(1);
   }
 
-  const jsonPath = process.argv[2] || path.join(rootDir, 'requirements', 'questionnaire_v1.json');
+  const jsonPath = process.argv[2] || path.join(rootDir, 'requirements', 'questionnaire.json');
   if (!fs.existsSync(jsonPath)) {
     console.error('JSON file not found:', jsonPath);
-    console.error('Create it or run from repo root: npm run questionnaire:export');
+    console.error('Create requirements/questionnaire.json with { free: [...], paid: [...] }');
     process.exit(1);
   }
 
@@ -55,6 +55,27 @@ async function main() {
     process.exit(1);
   }
 
+  const hasContent = (q) =>
+    q &&
+    typeof q === 'object' &&
+    ((Array.isArray(q) && q.some((s) => Array.isArray(s?.questions))) ||
+      (Array.isArray(q.free) && q.free.some((s) => Array.isArray(s?.questions))) ||
+      (Array.isArray(q.paid) && q.paid.some((s) => Array.isArray(s?.questions))));
+
+  if (Array.isArray(questionnaire)) {
+    questionnaire = { free: questionnaire, paid: [] };
+  } else if (!questionnaire || typeof questionnaire !== 'object' || !Array.isArray(questionnaire.free)) {
+    console.error('questionnaire must be { free: [...], paid: [...] } or legacy array of sections');
+    process.exit(1);
+  }
+  if (!Array.isArray(questionnaire.paid)) {
+    questionnaire.paid = [];
+  }
+  if (!hasContent(questionnaire)) {
+    console.error('questionnaire.free must have at least one section with questions');
+    process.exit(1);
+  }
+
   const supabase = createClient(url, key);
   const { data: rows } = await supabase
     .from('assessments')
@@ -62,33 +83,30 @@ async function main() {
     .order('created_at', { ascending: false })
     .limit(10);
 
-  const hasContent = (q) =>
-    Array.isArray(q) && q.length > 0 && q.some((s) => Array.isArray(s?.questions));
   const target = Array.isArray(rows) ? rows.find((r) => hasContent(r.questionnaire)) ?? rows?.[0] : null;
 
-  if (!target?.id) {
-    const { data: inserted, error: insertErr } = await supabase
+  const version = `v1.0-${Date.now()}`;
+  if (target?.id) {
+    const { error } = await supabase
       .from('assessments')
-      .insert({ questionnaire, version: `imported-${Date.now()}`, language_key: 'en' })
-      .select('id, version')
-      .single();
-    if (insertErr) {
-      console.error('Supabase error:', insertErr.message);
+      .update({ questionnaire, version })
+      .eq('id', target.id);
+    if (error) {
+      console.error('Supabase error:', error.message);
       process.exit(1);
     }
-    console.log('Created new assessment:', inserted?.version, '(id:', inserted?.id, ')');
+    console.log('Updated assessment', target.id, 'version', version);
   } else {
-    const { data, error } = await supabase
+    const { data: inserted, error } = await supabase
       .from('assessments')
-      .update({ questionnaire })
-      .eq('id', target.id)
+      .insert({ questionnaire, version, language_key: 'en' })
       .select('id, version')
       .single();
     if (error) {
       console.error('Supabase error:', error.message);
       process.exit(1);
     }
-    console.log('Updated assessment:', data?.version, '(id:', data?.id, ')');
+    console.log('Created assessment', inserted?.id, 'version', inserted?.version);
   }
 }
 

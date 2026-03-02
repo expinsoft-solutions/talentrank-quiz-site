@@ -13,25 +13,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'Server configuration error' });
   }
 
+  const isPaid = req.query.type === 'paid';
+
   try {
     const supabase = createServiceRoleClient();
-    const currentActiveAssessment = await getCurrentActiveAssessment(supabase);
-    if (!currentActiveAssessment) {
-      return res.status(404).json({ error: 'Questionnaire not found' });
+    const assessment = await getCurrentActiveAssessment(supabase, { variant: isPaid ? 'paid' : 'free' });
+    if (!assessment) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      return res.status(isPaid ? 200 : 404).json(
+        isPaid
+          ? { version: 'paid', sections: [], questions: [] }
+          : { error: 'Questionnaire not found' }
+      );
     }
 
-    const version = currentActiveAssessment.version;
-    let sections: DbSection[] = [];
-    let questions: DbQuestion[] = [];
-
-    if (currentActiveAssessment.questionnaire) {
-      const parsed = parseQuestionnaire(currentActiveAssessment.questionnaire);
-      sections = parsed.sections;
-      questions = parsed.questions.filter((q) => q.active !== false);
-    }
+    const variant = isPaid ? 'paid' : 'free';
+    const parsed = parseQuestionnaire(assessment.questionnaire ?? {}, variant);
+    const sections = parsed.sections.filter((s) => s.enabled !== false);
+    const questions = parsed.questions.filter((q) => q.active !== false);
 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-    res.status(200).json({ version, sections, questions });
+    res.status(200).json({ version: assessment.version, sections, questions });
   } catch {
     res.status(500).json({ error: 'Internal server error' });
   }

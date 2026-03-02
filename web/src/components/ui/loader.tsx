@@ -1,3 +1,4 @@
+import { Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LoaderProps {
@@ -5,22 +6,26 @@ interface LoaderProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const sizeClasses = {
-  sm: 'h-5 w-5 border-2',
-  md: 'h-8 w-8 border-2',
-  lg: 'h-10 w-10 border-[3px]',
+const sizeMap = {
+  sm: 20,
+  md: 32,
+  lg: 40,
 };
 
 export function Loader({ className, size = 'md' }: LoaderProps) {
+  const pixelSize = sizeMap[size];
   return (
     <div
       role="status"
       aria-label="Loading"
-      className={cn(
-        'rounded-full border-muted-foreground/30 border-t-indigo-500 animate-spin',
-        sizeClasses[size],
-        className
-      )}
-    />
+      className={cn('flex items-center justify-center text-violet-600 dark:text-violet-400', className)}
+    >
+      <Brain
+        size={pixelSize}
+        strokeWidth={2}
+        className="animate-pulse"
+        aria-hidden
+      />
+    </div>
   );
 }

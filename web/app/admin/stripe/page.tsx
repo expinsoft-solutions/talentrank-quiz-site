@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { CreditCard } from 'lucide-react';
+import { Loader } from '@/components/ui/loader';
 
 export default function AdminStripePage() {
   const [enabled, setEnabled] = useState(false);
@@ -82,7 +83,11 @@ export default function AdminStripePage() {
   }
 
   if (loading) {
-    return <div className="text-sm text-slate-500">Loading Stripe settings…</div>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader size="lg" />
+      </div>
+    );
   }
 
   return (
@@ -212,7 +217,7 @@ export default function AdminStripePage() {
             placeholder="$97"
             className="h-10 w-32"
           />
-          <p className="text-xs text-slate-500">Shown on the results page CTA (e.g. "$97"). Stripe charges the actual price from the Price ID.</p>
+          <p className="text-xs text-slate-500">Shown on the results page CTA (e.g. &quot;$97&quot;). Stripe charges the actual price from the Price ID.</p>
         </div>
 
         <Button type="submit" disabled={saving}>

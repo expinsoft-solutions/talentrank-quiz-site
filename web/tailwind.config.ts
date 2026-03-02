@@ -105,6 +105,10 @@
            "0%, 100%": { opacity: "1" },
            "50%": { opacity: "0.7" },
          },
+         "thump": {
+           "0%, 100%": { transform: "scale(1)" },
+           "50%": { transform: "scale(1.15)" },
+         },
        },
        animation: {
          "accordion-down": "accordion-down 0.2s ease-out",
@@ -112,6 +116,7 @@
          "fade-in": "fade-in 0.5s ease-out forwards",
          "slide-up": "slide-up 0.5s ease-out forwards",
          "pulse-soft": "pulse-soft 2s ease-in-out infinite",
+        "thump": "thump 0.8s ease-in-out infinite",
        },
      },
    },

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SectionQuestion } from '@/lib/assessment';
@@ -59,6 +60,7 @@ export function QuestionByType({
 
   if (question.type === 'text') {
     const textVal = typeof value === 'string' ? value : '';
+    const suggestions = (question.options ?? []).filter(Boolean);
     return (
       <label className="block">
         <p className="text-base sm:text-lg font-medium text-foreground mb-3 text-left leading-relaxed">
@@ -79,6 +81,23 @@ export function QuestionByType({
             error ? 'border-amber-500 dark:border-amber-500' : 'border-input'
           }`}
         />
+        {suggestions.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {suggestions.map((opt, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => {
+                  const append = textVal ? ` ${opt}` : opt;
+                  onChange(textVal + append);
+                }}
+                className="rounded-full border border-indigo-200 dark:border-indigo-800 bg-indigo-50/80 dark:bg-indigo-950/40 px-3 py-1.5 text-sm text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors"
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        )}
         {error && (
           <p className="text-sm text-amber-600 dark:text-amber-400 mt-2" role="alert">
             {error}
@@ -148,6 +167,8 @@ export function QuestionByType({
 
   if (question.type === 'mcq' && question.options && question.options.length > 0) {
     const numVal = typeof value === 'number' ? value : undefined;
+    const isOther = typeof value === 'string';
+    const otherVal = isOther ? value : '';
     return (
       <Card className="w-full max-w-full rounded-2xl border-indigo-200/70 dark:border-indigo-800/50 bg-white dark:bg-card shadow-xl overflow-hidden border-t-4 border-t-indigo-400 dark:border-t-indigo-500">
         <CardContent className="p-10 sm:p-14 space-y-8">
@@ -173,6 +194,33 @@ export function QuestionByType({
                 </button>
               );
             })}
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${
+                isOther
+                  ? 'border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20'
+                  : 'border-border hover:border-indigo-300 dark:hover:border-indigo-700'
+              }`}
+            >
+              Other
+            </button>
+            {isOther && (
+              <Input
+                type="text"
+                value={otherVal}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    onEnter?.();
+                  }
+                }}
+                placeholder="Type your answer..."
+                className="rounded-xl border-2 border-indigo-300 dark:border-indigo-700 bg-background"
+                autoFocus
+              />
+            )}
           </div>
         </CardContent>
       </Card>
@@ -182,6 +230,8 @@ export function QuestionByType({
   if (question.type === 'binary' && question.options && question.options.length >= 2) {
     const numVal = typeof value === 'number' ? value : undefined;
     const opts = question.options.slice(0, 2);
+    const isOther = typeof value === 'string';
+    const otherVal = isOther ? value : '';
     return (
       <Card className="w-full max-w-full rounded-2xl border-indigo-200/70 dark:border-indigo-800/50 bg-white dark:bg-card shadow-xl overflow-hidden border-t-4 border-t-indigo-400 dark:border-t-indigo-500">
         <CardContent className="p-10 sm:p-14 space-y-8">
@@ -207,7 +257,34 @@ export function QuestionByType({
                 </button>
               );
             })}
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className={`flex-1 min-w-[140px] px-6 py-4 rounded-xl border-2 transition-colors font-medium ${
+                isOther
+                  ? 'border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20'
+                  : 'border-border hover:border-indigo-300 dark:hover:border-indigo-700'
+              }`}
+            >
+              Other
+            </button>
           </div>
+          {isOther && (
+            <Input
+              type="text"
+              value={otherVal}
+              onChange={(e) => onChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  onEnter?.();
+                }
+              }}
+              placeholder="Type your answer..."
+              className="rounded-xl border-2 border-indigo-300 dark:border-indigo-700 bg-background"
+              autoFocus
+            />
+          )}
         </CardContent>
       </Card>
     );

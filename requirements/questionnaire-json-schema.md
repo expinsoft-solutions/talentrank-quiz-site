@@ -7,8 +7,8 @@ The questionnaire is stored as JSON for flexibility and to match the structure u
 The requirement is satisfied as follows:
 
 - **Questionnaire is a JSON structure:** It lives in `assessments.questionnaire` (jsonb). One row per quiz version; no normalized `sections`/`questions` tables are required for the running app.
-- **Single source of truth:** The canonical questionnaire is the JSON (in the DB). You can also keep a file `requirements/questionnaire_v1.json` and push it with `npm run questionnaire:load`; then edits are file-first and version-controlled.
-- **Bootstrap:** Ensure `requirements/questionnaire_v1.json` has content (edit or copy from another env), then run `npm run questionnaire:load` to push into `assessments`. Export: `npm run questionnaire:export` reads from `assessments` and writes that file (single source).
+- **Single source of truth:** The canonical questionnaire is the JSON (in the DB). Use `requirements/questionnaire.json` with `{ free: [...], paid: [...] }` and load via `npm run questionnaire:load`.
+- **Bootstrap:** Ensure `requirements/questionnaire.json` has content, then run `cd web && npm run questionnaire:load` to push into `assessments`. Export: `npm run questionnaire:export` reads from `assessments` and writes that file.
 - **Dynamic/flexible:** Add sections, question types, or fields in the JSON without DB migrations.
 
 ## Compliance with requirements docs
@@ -42,7 +42,16 @@ Answers are stored in the `responses` table (per-question).
 
 ## Questionnaire JSON shape
 
-`questionnaire` is a **JSON array of sections**. Each section:
+`questionnaire` is an object with `free` and `paid` arrays of sections:
+
+```json
+{
+  "free": [ /* main quiz sections */ ],
+  "paid": [ /* post-purchase onboarding sections */ ]
+}
+```
+
+Each section:
 
 ```json
 {

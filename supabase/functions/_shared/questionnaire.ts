@@ -49,11 +49,13 @@ export interface DbQuestion {
   options: string[] | null;
 }
 
-export function parseQuestionnaire(questionnaire: unknown): { sections: DbSection[]; questions: DbQuestion[] } {
+export type QuestionnaireVariant = 'free' | 'paid';
+
+function parseSectionsArray(arr: unknown): { sections: DbSection[]; questions: DbQuestion[] } {
   const sections: DbSection[] = [];
   const questions: DbQuestion[] = [];
-  if (!Array.isArray(questionnaire)) return { sections, questions };
-  for (const row of questionnaire) {
+  if (!Array.isArray(arr)) return { sections, questions };
+  for (const row of arr) {
     const s = row as Record<string, unknown>;
     const sectionId = typeof s.id === 'string' ? s.id : String(s.id);
     sections.push({
@@ -90,4 +92,16 @@ export function parseQuestionnaire(questionnaire: unknown): { sections: DbSectio
     }
   }
   return { sections, questions };
+}
+
+export function parseQuestionnaire(
+  questionnaire: unknown,
+  variant: QuestionnaireVariant = 'free'
+): { sections: DbSection[]; questions: DbQuestion[] } {
+  if (questionnaire && typeof questionnaire === 'object' && !Array.isArray(questionnaire)) {
+    const obj = questionnaire as Record<string, unknown>;
+    const part = obj[variant];
+    if (part !== undefined) return parseSectionsArray(part);
+  }
+  return parseSectionsArray(questionnaire);
 }

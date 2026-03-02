@@ -57,8 +57,21 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  if (!body.questionnaire || !Array.isArray(body.questionnaire)) {
-    return NextResponse.json({ error: 'questionnaire must be an array of sections' }, { status: 400 });
+  if (!body.questionnaire) {
+    return NextResponse.json({ error: 'questionnaire is required' }, { status: 400 });
+  }
+  const q = body.questionnaire;
+  const valid =
+    (typeof q === 'object' &&
+      !Array.isArray(q) &&
+      Array.isArray((q as Record<string, unknown>).free) &&
+      Array.isArray((q as Record<string, unknown>).paid)) ||
+    Array.isArray(q);
+  if (!valid) {
+    return NextResponse.json(
+      { error: 'questionnaire must be { free: [...], paid: [...] } or legacy array of sections' },
+      { status: 400 }
+    );
   }
 
   const admin = createAdminClient();

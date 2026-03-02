@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Export questionnaire from assessments table to requirements/questionnaire_v1.json.
+ * Export questionnaire from assessments table to requirements/questionnaire.json.
  * Run from web: npm run questionnaire:export
  *
  * Requires: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (e.g. in web/.env.local)
@@ -38,7 +38,7 @@ async function main() {
     process.exit(1);
   }
 
-  const outPath = process.argv[2] || path.join(rootDir, 'requirements', 'questionnaire_v1.json');
+  const outPath = process.argv[2] || path.join(rootDir, 'requirements', 'questionnaire.json');
   const supabase = createClient(url, key);
 
   const { data: rows, error } = await supabase
@@ -52,19 +52,34 @@ async function main() {
     process.exit(1);
   }
   const hasContent = (q) =>
-    Array.isArray(q) && q.length > 0 && q.some((s) => Array.isArray(s?.questions));
+    q &&
+    typeof q === 'object' &&
+    ((Array.isArray(q) && q.some((s) => Array.isArray(s?.questions))) ||
+      (Array.isArray(q.free) && q.free.some((s) => Array.isArray(s?.questions))) ||
+      (Array.isArray(q.paid) && q.paid.some((s) => Array.isArray(s?.questions))));
   const row = Array.isArray(rows) ? rows.find((r) => hasContent(r.questionnaire)) ?? rows[0] : null;
   if (!row?.questionnaire) {
     console.error('No questionnaire found in assessments table');
-    console.error('Run: npm run questionnaire:load (with requirements/questionnaire_v1.json)');
+    console.error('Run: npm run questionnaire:load (with requirements/questionnaire.json)');
     process.exit(1);
   }
 
-  const questionnaire = Array.isArray(row.questionnaire) ? row.questionnaire : [];
+  let questionnaire = row.questionnaire;
+  if (Array.isArray(questionnaire)) {
+    questionnaire = { free: questionnaire, paid: [] };
+  } else if (!questionnaire.paid) {
+    questionnaire = { ...questionnaire, paid: [] };
+  }
   fs.writeFileSync(outPath, JSON.stringify(questionnaire, null, 2), 'utf8');
-  const sectionCount = questionnaire.length;
-  const questionCount = questionnaire.reduce((sum, s) => sum + (Array.isArray(s.questions) ? s.questions.length : 0), 0);
-  console.log('Exported', sectionCount, 'sections,', questionCount, 'questions to', outPath);
+  const freeCount = Array.isArray(questionnaire.free) ? questionnaire.free.length : 0;
+  const paidCount = Array.isArray(questionnaire.paid) ? questionnaire.paid.length : 0;
+  const freeQ = Array.isArray(questionnaire.free)
+    ? questionnaire.free.reduce((sum, s) => sum + (Array.isArray(s.questions) ? s.questions.length : 0), 0)
+    : 0;
+  const paidQ = Array.isArray(questionnaire.paid)
+    ? questionnaire.paid.reduce((sum, s) => sum + (Array.isArray(s.questions) ? s.questions.length : 0), 0)
+    : 0;
+  console.log('Exported to', outPath, '| free:', freeCount, 'sections,', freeQ, 'questions | paid:', paidCount, 'sections,', paidQ, 'questions');
 }
 
 main();

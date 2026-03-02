@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { Switch } from '@/components/ui/switch';
@@ -38,6 +38,8 @@ function QuestionsList({
   setEditingQuestion,
   updateQuestion,
   reorderQuestions,
+  addQuestion,
+  deleteQuestion,
   dragRef,
   dragOver,
   setDragOver,
@@ -47,6 +49,8 @@ function QuestionsList({
   setEditingQuestion: (id: string | null) => void;
   updateQuestion: (sectionId: string, questionId: string, updates: Partial<Question>) => void;
   reorderQuestions: (sectionId: string, fromIndex: number, toIndex: number) => void;
+  addQuestion: (sectionId: string) => void;
+  deleteQuestion: (sectionId: string, questionId: string) => void;
   dragRef: React.MutableRefObject<{ sectionId: string; index: number } | null>;
   dragOver: { sectionId: string; index: number } | null;
   setDragOver: (v: { sectionId: string; index: number } | null) => void;
@@ -108,20 +112,30 @@ function QuestionsList({
                 <GripVertical className="h-4 w-4" />
               </span>
               <div className="flex-1 min-w-0 space-y-2">
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-between gap-4 text-left"
-                  onClick={() =>
-                    setEditingQuestion(editingQuestion === q.id ? null : q.id)
-                  }
-                >
-                  <span className="font-mono text-xs text-slate-500 shrink-0">{q.id}</span>
-                  <span className="text-sm truncate min-w-0 flex-1">
-                    {(q.statement ?? q.text ?? '').slice(0, 80)}
-                    {(q.statement ?? q.text ?? '').length > 80 ? '…' : ''}
-                  </span>
-                  <span className="shrink-0">{editingQuestion === q.id ? '−' : '+'}</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="flex-1 flex items-center justify-between gap-4 text-left min-w-0"
+                    onClick={() =>
+                      setEditingQuestion(editingQuestion === q.id ? null : q.id)
+                    }
+                  >
+                    <span className="font-mono text-xs text-slate-500 shrink-0">{q.id}</span>
+                    <span className="text-sm truncate min-w-0 flex-1">
+                      {(q.statement ?? q.text ?? '').slice(0, 80)}
+                      {(q.statement ?? q.text ?? '').length > 80 ? '…' : ''}
+                    </span>
+                    <span className="shrink-0">{editingQuestion === q.id ? '−' : '+'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteQuestion(section.id, q.id)}
+                    className="shrink-0 p-1.5 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                    aria-label="Delete question"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
 
                 {editingQuestion === q.id && (
                   <div className="pt-2 space-y-3 text-sm">
@@ -138,10 +152,12 @@ function QuestionsList({
                                 ? [...baseOpts, '', '', ''].slice(0, 4)
                                 : newType === 'binary'
                                   ? [...baseOpts, ''].slice(0, 2)
-                                  : [];
+                                  : newType === 'text'
+                                    ? baseOpts
+                                    : [];
                             updateQuestion(section.id, q.id, {
                               type: newType,
-                              options: newType === 'likert' || newType === 'text' ? [] : opts,
+                              options: newType === 'likert' ? [] : opts,
                             });
                           }}
                           className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
@@ -217,6 +233,51 @@ function QuestionsList({
                         })}
                       </div>
                     )}
+                    {q.type === 'text' && (
+                      <div className="space-y-2">
+                        <label className="text-xs text-slate-500 block">Suggestions (optional)</label>
+                        <div className="space-y-2">
+                          {(q.options ?? []).map((opt, i) => (
+                            <div key={i} className="flex gap-2">
+                              <input
+                                type="text"
+                                value={opt}
+                                onChange={(e) => {
+                                  const newOpts = [...(q.options ?? [])];
+                                  newOpts[i] = e.target.value;
+                                  updateQuestion(section.id, q.id, { options: newOpts });
+                                }}
+                                placeholder={`Suggestion ${i + 1}`}
+                                className="flex-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newOpts = (q.options ?? []).filter((_, j) => j !== i);
+                                  updateQuestion(section.id, q.id, { options: newOpts });
+                                }}
+                                className="shrink-0 p-2 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                aria-label="Remove suggestion"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const opts = [...(q.options ?? []), ''];
+                              updateQuestion(section.id, q.id, { options: opts });
+                            }}
+                            className="flex items-center gap-2 rounded border border-dashed border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-600"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Add suggestion
+                          </button>
+                        </div>
+                        <p className="text-xs text-slate-500">Shown as tappable suggestions in the quiz UI</p>
+                      </div>
+                    )}
                     <div className="flex items-center gap-4">
                       <label className="flex items-center gap-2">
                         <input
@@ -275,18 +336,38 @@ function QuestionsList({
           dragRef.current = null;
         }}
       />
+      <button
+        type="button"
+        onClick={() => addQuestion(section.id)}
+        className="mt-2 flex items-center gap-2 rounded border border-dashed border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+      >
+        <Plus className="h-4 w-4" />
+        Add question
+      </button>
     </div>
   );
 }
 
+type Variant = 'free' | 'paid';
+
+function normalizeSections(raw: unknown): Section[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((s: Section) => ({ ...s, enabled: s.enabled !== false }));
+}
+
 export default function AdminQuestionsPage() {
-  const [questionnaire, setQuestionnaire] = useState<Section[]>([]);
+  const [freeSections, setFreeSections] = useState<Section[]>([]);
+  const [paidSections, setPaidSections] = useState<Section[]>([]);
+  const [variant, setVariant] = useState<Variant>('free');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
   const dragRef = useRef<{ sectionId: string; index: number } | null>(null);
   const [dragOver, setDragOver] = useState<{ sectionId: string; index: number } | null>(null);
+
+  const questionnaire = variant === 'free' ? freeSections : paidSections;
+  const setQuestionnaire = variant === 'free' ? setFreeSections : setPaidSections;
 
   useEffect(() => {
     fetch('/api/admin/questionnaire')
@@ -295,10 +376,14 @@ export default function AdminQuestionsPage() {
         return res.json();
       })
       .then((d) => {
-        const raw = (d.questionnaire ?? []) as Section[];
-        setQuestionnaire(
-          raw.map((s) => ({ ...s, enabled: s.enabled !== false }))
-        );
+        const raw = d.questionnaire;
+        if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+          setFreeSections(normalizeSections(raw.free));
+          setPaidSections(normalizeSections(raw.paid));
+        } else {
+          setFreeSections(normalizeSections(raw ?? []));
+          setPaidSections([]);
+        }
       })
       .catch(() => toast.error('Failed to load questionnaire'))
       .finally(() => setLoading(false));
@@ -307,10 +392,10 @@ export default function AdminQuestionsPage() {
   async function handleSave() {
     setSaving(true);
     try {
-      const payload = questionnaire.map((s) => ({
-        ...s,
-        enabled: s.enabled !== false,
-      }));
+      const payload = {
+        free: freeSections.map((s) => ({ ...s, enabled: s.enabled !== false })),
+        paid: paidSections.map((s) => ({ ...s, enabled: s.enabled !== false })),
+      };
       const res = await fetch('/api/admin/questionnaire', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -360,6 +445,40 @@ export default function AdminQuestionsPage() {
     );
   }
 
+  function addQuestion(sectionId: string) {
+    const newId = `q_${Date.now()}`;
+    const newQuestion: Question = {
+      id: newId,
+      statement: '',
+      text: '',
+      type: 'likert',
+      active: true,
+    };
+    setQuestionnaire((prev) =>
+      prev.map((s) => {
+        if (s.id !== sectionId) return s;
+        return {
+          ...s,
+          questions: [...s.questions, newQuestion],
+        };
+      })
+    );
+    setEditingQuestion(newId);
+  }
+
+  function deleteQuestion(sectionId: string, questionId: string) {
+    setQuestionnaire((prev) =>
+      prev.map((s) => {
+        if (s.id !== sectionId) return s;
+        return {
+          ...s,
+          questions: s.questions.filter((q) => q.id !== questionId),
+        };
+      })
+    );
+    if (editingQuestion === questionId) setEditingQuestion(null);
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -371,7 +490,33 @@ export default function AdminQuestionsPage() {
   return (
     <div className="w-full max-w-6xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Question Bank</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-semibold">Question Bank</h1>
+          <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5">
+            <button
+              type="button"
+              onClick={() => setVariant('free')}
+              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                variant === 'free'
+                  ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+              }`}
+            >
+              Free Quiz
+            </button>
+            <button
+              type="button"
+              onClick={() => setVariant('paid')}
+              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                variant === 'paid'
+                  ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+              }`}
+            >
+              Paid Quiz
+            </button>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <Button onClick={handleSave} disabled={saving}>
             {saving ? 'Saving…' : 'Save changes'}
@@ -458,6 +603,8 @@ export default function AdminQuestionsPage() {
                   setEditingQuestion={setEditingQuestion}
                   updateQuestion={updateQuestion}
                   reorderQuestions={reorderQuestions}
+                  addQuestion={addQuestion}
+                  deleteQuestion={deleteQuestion}
                   dragRef={dragRef}
                   dragOver={dragOver}
                   setDragOver={setDragOver}

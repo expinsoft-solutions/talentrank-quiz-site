@@ -1,0 +1,1518 @@
+{
+  "free": [
+    {
+      "id": "personality_wiring",
+      "name": "Personality Wiring",
+      "order_index": 1,
+      "isTimed": false,
+      "time_limit_seconds": null,
+      "purpose": "Big Five → MBTI-style type",
+      "questions": [
+        {
+          "id": "P1",
+          "statement": "I am the life of the party.",
+          "type": "likert",
+          "dimension": "EI",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P2",
+          "statement": "I don't talk a lot.",
+          "type": "likert",
+          "dimension": "EI",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P3",
+          "statement": "I feel comfortable around people.",
+          "type": "likert",
+          "dimension": "EI",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P4",
+          "statement": "I keep in the background.",
+          "type": "likert",
+          "dimension": "EI",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P5",
+          "statement": "I start conversations.",
+          "type": "likert",
+          "dimension": "EI",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P6",
+          "statement": "I have little to say.",
+          "type": "likert",
+          "dimension": "EI",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P7",
+          "statement": "I talk to a lot of different people at parties.",
+          "type": "likert",
+          "dimension": "EI",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P8",
+          "statement": "I am quiet around strangers.",
+          "type": "likert",
+          "dimension": "EI",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P9",
+          "statement": "I have a rich vocabulary.",
+          "type": "likert",
+          "dimension": "SN",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P10",
+          "statement": "I have difficulty understanding abstract ideas.",
+          "type": "likert",
+          "dimension": "SN",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P11",
+          "statement": "I have a vivid imagination.",
+          "type": "likert",
+          "dimension": "SN",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P12",
+          "statement": "I am not interested in abstract ideas.",
+          "type": "likert",
+          "dimension": "SN",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P13",
+          "statement": "I have excellent ideas.",
+          "type": "likert",
+          "dimension": "SN",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P14",
+          "statement": "I do not have a good imagination.",
+          "type": "likert",
+          "dimension": "SN",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P15",
+          "statement": "I am quick to understand things.",
+          "type": "likert",
+          "dimension": "SN",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P16",
+          "statement": "I spend time reflecting on things.",
+          "type": "likert",
+          "dimension": "SN",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P17",
+          "statement": "I am interested in people.",
+          "type": "likert",
+          "dimension": "TF",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P18",
+          "statement": "I feel little concern for others.",
+          "type": "likert",
+          "dimension": "TF",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P19",
+          "statement": "I sympathize with others' feelings.",
+          "type": "likert",
+          "dimension": "TF",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P20",
+          "statement": "I insult people.",
+          "type": "likert",
+          "dimension": "TF",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P21",
+          "statement": "I have a soft heart.",
+          "type": "likert",
+          "dimension": "TF",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P22",
+          "statement": "I am not interested in other people's problems.",
+          "type": "likert",
+          "dimension": "TF",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P23",
+          "statement": "I take time out for others.",
+          "type": "likert",
+          "dimension": "TF",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P24",
+          "statement": "I make people feel at ease.",
+          "type": "likert",
+          "dimension": "TF",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P25",
+          "statement": "I am always prepared.",
+          "type": "likert",
+          "dimension": "JP",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P26",
+          "statement": "I leave my belongings around.",
+          "type": "likert",
+          "dimension": "JP",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P27",
+          "statement": "I pay attention to details.",
+          "type": "likert",
+          "dimension": "JP",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P28",
+          "statement": "I make a mess of things.",
+          "type": "likert",
+          "dimension": "JP",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P29",
+          "statement": "I get chores done right away.",
+          "type": "likert",
+          "dimension": "JP",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P30",
+          "statement": "I often forget to put things back in their proper place.",
+          "type": "likert",
+          "dimension": "JP",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P31",
+          "statement": "I like order.",
+          "type": "likert",
+          "dimension": "JP",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "P32",
+          "statement": "I shirk my duties.",
+          "type": "likert",
+          "dimension": "JP",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "N1",
+          "statement": "I get stressed out easily.",
+          "type": "likert",
+          "dimension": "NEURO",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "N2",
+          "statement": "I am relaxed most of the time.",
+          "type": "likert",
+          "dimension": "NEURO",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "N3",
+          "statement": "I worry about things.",
+          "type": "likert",
+          "dimension": "NEURO",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "N4",
+          "statement": "I seldom feel blue.",
+          "type": "likert",
+          "dimension": "NEURO",
+          "reverseScored": true,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "N5",
+          "statement": "I get upset easily.",
+          "type": "likert",
+          "dimension": "NEURO",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        },
+        {
+          "id": "N6",
+          "statement": "I change my mood a lot.",
+          "type": "likert",
+          "dimension": "NEURO",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Very Inaccurate",
+            "Moderately Inaccurate",
+            "Neutral",
+            "Moderately Accurate",
+            "Very Accurate"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "self_sabotage",
+      "name": "Self-Sabotage Patterns",
+      "order_index": 2,
+      "isTimed": false,
+      "time_limit_seconds": null,
+      "purpose": "Identify limiting behaviors",
+      "questions": [
+        {
+          "id": "S1",
+          "statement": "I delay starting projects because I'm not sure I can do them perfectly.",
+          "type": "likert",
+          "dimension": "perfectionism",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S2",
+          "statement": "I spend so much time planning that I don't have enough time to execute.",
+          "type": "likert",
+          "dimension": "perfectionism",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S3",
+          "statement": "I abandon projects when I realize they won't meet my standards.",
+          "type": "likert",
+          "dimension": "perfectionism",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S4",
+          "statement": "When I succeed, I attribute it more to luck or timing than my abilities.",
+          "type": "likert",
+          "dimension": "impostor",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S5",
+          "statement": "I'm afraid people will discover I'm not as capable as they think.",
+          "type": "likert",
+          "dimension": "impostor",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S6",
+          "statement": "I downplay my accomplishments when others praise me.",
+          "type": "likert",
+          "dimension": "impostor",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S7",
+          "statement": "Before important tasks, I find reasons why I might not perform well.",
+          "type": "likert",
+          "dimension": "self_handicapping",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S8",
+          "statement": "I put less effort into things that matter so I have an excuse if I fail.",
+          "type": "likert",
+          "dimension": "self_handicapping",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S9",
+          "statement": "I take on too much so I can blame poor performance on being overcommitted.",
+          "type": "likert",
+          "dimension": "self_handicapping",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S10",
+          "statement": "I check with others before making decisions I could make myself.",
+          "type": "likert",
+          "dimension": "validation_seeking",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S11",
+          "statement": "Criticism from others affects my confidence more than it should.",
+          "type": "likert",
+          "dimension": "validation_seeking",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S12",
+          "statement": "I avoid stating opinions until I know what others think.",
+          "type": "likert",
+          "dimension": "validation_seeking",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S13",
+          "statement": "I stay in situations I've outgrown because change feels risky.",
+          "type": "likert",
+          "dimension": "avoidance",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S14",
+          "statement": "I avoid difficult conversations even when they're necessary.",
+          "type": "likert",
+          "dimension": "avoidance",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        },
+        {
+          "id": "S15",
+          "statement": "I'd rather keep the peace than advocate for what I want.",
+          "type": "likert",
+          "dimension": "avoidance",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Never",
+            "Rarely",
+            "Sometimes",
+            "Often",
+            "Very Often"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "optimal_environment",
+      "name": "Optimal Work Environment",
+      "order_index": 3,
+      "isTimed": false,
+      "time_limit_seconds": null,
+      "purpose": "Work/culture fit",
+      "questions": [
+        {
+          "id": "E1",
+          "statement": "I prefer work where I set my own priorities and methods.",
+          "type": "likert",
+          "dimension": "autonomy",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": "E2",
+          "statement": "I work better with clear guidelines and defined processes.",
+          "type": "likert",
+          "dimension": "autonomy",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": "E3",
+          "statement": "How much direction do you prefer from managers?",
+          "type": "likert",
+          "dimension": "autonomy",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Complete Autonomy",
+            "Some Autonomy",
+            "Balanced",
+            "Some Guidance",
+            "Detailed Guidance"
+          ]
+        },
+        {
+          "id": "E4",
+          "statement": "I thrive in fast-paced environments with tight deadlines.",
+          "type": "likert",
+          "dimension": "pace",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": "E5",
+          "statement": "I do my best work when I can take time to be thorough.",
+          "type": "likert",
+          "dimension": "pace",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": "E6",
+          "statement": "I prefer working independently most of the time.",
+          "type": "likert",
+          "dimension": "social",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": "E7",
+          "statement": "I feel energized by collaborating with a team throughout the day.",
+          "type": "likert",
+          "dimension": "social",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": "E8",
+          "statement": "My ideal work involves:",
+          "type": "likert",
+          "dimension": "social",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Mostly Solo",
+            "Lean Solo",
+            "Balanced",
+            "Lean Team",
+            "Mostly Team"
+          ]
+        },
+        {
+          "id": "E9",
+          "statement": "I prefer stable positions over high-upside but uncertain opportunities.",
+          "type": "likert",
+          "dimension": "risk",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": "E10",
+          "statement": "I'm willing to take a pay cut for work that's more meaningful to me.",
+          "type": "likert",
+          "dimension": "risk",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": "E11",
+          "statement": "I do my best work:",
+          "type": "likert",
+          "dimension": "work_mode",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Fully Remote",
+            "Mostly Remote",
+            "Hybrid",
+            "Mostly In-Person",
+            "Fully In-Person"
+          ]
+        },
+        {
+          "id": "E12",
+          "statement": "I prefer environments that are:",
+          "type": "likert",
+          "dimension": "work_mode",
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true,
+          "options": [
+            "Quiet/Focused",
+            "Mostly Quiet",
+            "Balanced",
+            "Mostly Buzzing",
+            "Buzzing/Social"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cognitive_architecture",
+      "name": "Cognitive Architecture",
+      "order_index": 4,
+      "isTimed": true,
+      "time_limit_seconds": 540,
+      "purpose": "IQ/processing estimate",
+      "questions": [
+        {
+          "id": "C1",
+          "statement": "Cognitive item 1 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C2",
+          "statement": "Cognitive item 2 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C3",
+          "statement": "Cognitive item 3 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C4",
+          "statement": "Cognitive item 4 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C5",
+          "statement": "Cognitive item 5 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C6",
+          "statement": "Cognitive item 6 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C7",
+          "statement": "Cognitive item 7 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C8",
+          "statement": "Cognitive item 8 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C9",
+          "statement": "Cognitive item 9 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C10",
+          "statement": "Cognitive item 10 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C11",
+          "statement": "Cognitive item 11 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C12",
+          "statement": "Cognitive item 12 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C13",
+          "statement": "Cognitive item 13 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C14",
+          "statement": "Cognitive item 14 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C15",
+          "statement": "Cognitive item 15 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "C16",
+          "statement": "Cognitive item 16 (ICAR16 – update when available)",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        }
+      ]
+    },
+    {
+      "id": "short_answer",
+      "name": "Short Answer",
+      "order_index": 5,
+      "isTimed": false,
+      "time_limit_seconds": null,
+      "purpose": "AI report personalization",
+      "questions": [
+        {
+          "id": "O1",
+          "statement": "What do you do for work, and what's the hardest part of your job?",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "O2",
+          "statement": "If you knew you couldn't fail, what would you do with your career?",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "O3",
+          "statement": "What do people misunderstand about you?",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "O4",
+          "statement": "What's a goal you've had for over a year that you haven't achieved? Why not?",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "O5",
+          "statement": "Describe a recent situation where you felt frustrated at work.",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        },
+        {
+          "id": "O6",
+          "statement": "When you imagine \"making it,\" what does that look like?",
+          "type": "text",
+          "dimension": null,
+          "reverseScored": false,
+          "weight": 1,
+          "correct_answer": null,
+          "active": true
+        }
+      ]
+    }
+  ],
+  "paid": [
+    {
+      "id": "paid_blueprint",
+      "name": "Blueprint Personalization",
+      "order_index": 1,
+      "isTimed": false,
+      "time_limit_seconds": null,
+      "purpose": "Blueprint personalization",
+      "enabled": true,
+      "questions": [
+        {
+          "id": "paid_1",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": null,
+          "dimension": null,
+          "statement": "What's the main reason you invested in your blueprint?",
+          "reverseScored": false
+        },
+        {
+          "id": "paid_2",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": null,
+          "dimension": null,
+          "statement": "What's your current work situation? (employed full-time, freelancing, job searching, building something on the side, etc.). What do you do specifically?",
+          "reverseScored": false
+        },
+        {
+          "id": "paid_3",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": null,
+          "dimension": null,
+          "statement": "If money and failure weren't factors, what would you spend your working hours doing?",
+          "reverseScored": false
+        },
+        {
+          "id": "paid_4",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": null,
+          "dimension": null,
+          "statement": "Do you want to start a business? Share details.",
+          "reverseScored": false
+        },
+        {
+          "id": "paid_5",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": null,
+          "dimension": null,
+          "statement": "Think about the last time you were close to a breakthrough but it fell apart. What happened?",
+          "reverseScored": false
+        },
+        {
+          "id": "paid_6",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": null,
+          "dimension": null,
+          "statement": "What's a goal you've had for 2+ years that you still haven't achieved? What do you tell yourself about why?",
+          "reverseScored": false
+        },
+        {
+          "id": "paid_7",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": null,
+          "dimension": null,
+          "statement": "When you imagine yourself succeeding at your biggest goal, what's the first negative thought that shows up?",
+          "reverseScored": false
+        },
+        {
+          "id": "paid_8",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": null,
+          "dimension": null,
+          "statement": "Who's the one person whose opinion of you matters most professionally? What do you think they currently think of you?",
+          "reverseScored": false
+        },
+        {
+          "id": "paid_9",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": null,
+          "dimension": null,
+          "statement": "When you need buy-in from someone important, what's your default approach? (Options: over-prepare and present logic / avoid until necessary / charm and read the room / send an email instead of asking in person)",
+          "reverseScored": false
+        },
+        {
+          "id": "paid_10",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": null,
+          "dimension": null,
+          "statement": "How do you typically respond when you get good advice? (implement immediately / research more first / wait until it feels right / acknowledge it then forget)",
+          "reverseScored": false
+        },
+        {
+          "id": "paid_11",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": null,
+          "dimension": null,
+          "statement": "What's the last self-improvement book, course, or program you bought? Did you finish it?",
+          "reverseScored": false
+        },
+        {
+          "id": "paid_12",
+          "type": "text",
+          "active": true,
+          "weight": 1,
+          "options": [
+            "Student",
+            "Employee",
+            "Entrepreneur",
+            "Unemployed",
+            "Other"
+          ],
+          "dimension": null,
+          "statement": "I am a...",
+          "reverseScored": false
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,7 @@ import type { PublicStripeSettings } from '@/lib/stripe/types';
 
 export default function ResultPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader className="border-indigo-500" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader size="lg" /></div>}>
       <ResultPageContent />
     </Suspense>
   );
@@ -165,7 +165,7 @@ function ResultPageContent() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <Loader className="border-indigo-500" />
+        <Loader size="lg" />
         <p className="text-sm text-muted-foreground">Loading your results…</p>
       </div>
     );

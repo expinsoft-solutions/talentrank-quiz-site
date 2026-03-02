@@ -1,7 +1,7 @@
 -- Seed for non-questionnaire data (e.g. users, etc.) can go here.
 --
 -- Questionnaire is the single source of truth in public.assessments (JSON column).
--- To bootstrap: ensure requirements/questionnaire_v1.json exists, then run:
---   npm run questionnaire:load
--- To create questionnaire_v1.json from scratch, add section/question JSON there
--- and load. To export from an existing assessments row: npm run questionnaire:export.
+-- Structure: { free: [...], paid: [...] }
+-- To bootstrap: ensure requirements/questionnaire.json exists, then run:
+--   cd web && npm run questionnaire:load
+-- To export from an existing assessments row: npm run questionnaire:export

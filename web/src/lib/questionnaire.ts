@@ -1,13 +1,10 @@
 import type { DbSection, DbQuestion } from '@/types/assessment';
 
-export function parseQuestionnaire(questionnaire: unknown): {
-  sections: DbSection[];
-  questions: DbQuestion[];
-} {
+function parseSectionsArray(arr: unknown): { sections: DbSection[]; questions: DbQuestion[] } {
   const sections: DbSection[] = [];
   const questions: DbQuestion[] = [];
-  if (!Array.isArray(questionnaire)) return { sections, questions };
-  for (const row of questionnaire) {
+  if (!Array.isArray(arr)) return { sections, questions };
+  for (const row of arr) {
     const s = row as Record<string, unknown>;
     const sectionId = typeof s.id === 'string' ? s.id : String(s.id);
     const enabled = s.enabled === undefined ? true : s.enabled === true;
@@ -46,4 +43,22 @@ export function parseQuestionnaire(questionnaire: unknown): {
     }
   }
   return { sections, questions };
+}
+
+export type QuestionnaireVariant = 'free' | 'paid';
+
+export function parseQuestionnaire(
+  questionnaire: unknown,
+  variant: QuestionnaireVariant = 'free'
+): { sections: DbSection[]; questions: DbQuestion[] } {
+  if (questionnaire && typeof questionnaire === 'object' && !Array.isArray(questionnaire)) {
+    const obj = questionnaire as Record<string, unknown>;
+    const part = obj[variant];
+    if (part !== undefined) return parseSectionsArray(part);
+    if (variant === 'paid') return { sections: [], questions: [] };
+  }
+  if (Array.isArray(questionnaire) && variant === 'paid') {
+    return { sections: [], questions: [] };
+  }
+  return parseSectionsArray(questionnaire);
 }

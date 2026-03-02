@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
 
     const { data: assessmentRow, error: assessmentError } = await supabase
       .from('assessment_attempts')
-      .select('id, user_id, client_token, status, mbti, axis_strengths, cognitive_percentile, report_text, questionnaire_version_id')
+      .select('id, user_id, client_token, status, mbti, axis_strengths, cognitive_percentile, report_text, questionnaire_version_id, paid_responses')
       .eq('id', assessmentId)
       .eq('client_token', clientToken)
       .single();
@@ -98,14 +98,16 @@ Deno.serve(async (req) => {
     const questionIds = [...new Set((responses ?? []).map((r: { question_id: string }) => r.question_id))];
     let questionMap = new Map<string, string>();
 
+    let questionnaireData: { questionnaire?: unknown } | null = null;
     if (assessmentRow.questionnaire_version_id) {
       const { data: qv } = await supabase
         .from('assessments')
         .select('questionnaire')
         .eq('id', assessmentRow.questionnaire_version_id)
         .single();
+      questionnaireData = qv;
       if (qv?.questionnaire) {
-        const parsed = parseQuestionnaire(qv.questionnaire);
+        const parsed = parseQuestionnaire(qv.questionnaire, 'free');
         questionMap = new Map(parsed.questions.map((q) => [q.id, q.text]));
       }
     }
@@ -117,6 +119,19 @@ Deno.serve(async (req) => {
     for (const r of responses ?? []) {
       const text = questionMap.get(r.question_id);
       if (text && r.answer_raw) shortAnswers.push({ questionText: text, answerRaw: r.answer_raw });
+    }
+
+    const paidResponses = (assessmentRow.paid_responses ?? {}) as Record<string, { answerRaw?: string }>;
+    if (Object.keys(paidResponses).length > 0 && questionnaireData?.questionnaire) {
+      const parsed = parseQuestionnaire(questionnaireData.questionnaire, 'paid');
+      const paidQuestionMap = new Map(parsed.questions.map((q) => [q.id, q.text]));
+      for (const [qId, val] of Object.entries(paidResponses)) {
+        const raw = val?.answerRaw;
+        if (typeof raw === 'string' && raw.trim()) {
+          const text = paidQuestionMap.get(qId) || qId;
+          shortAnswers.push({ questionText: text, answerRaw: raw.trim() });
+        }
+      }
     }
 
     const axisStrengths = (assessmentRow.axis_strengths as Record<string, number>) ?? {};

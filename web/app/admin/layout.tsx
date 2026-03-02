@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { CreditCard, FileQuestion, LayoutList, LogOut, Settings, Sparkles, Video } from 'lucide-react';
+import { Loader } from '@/components/ui/loader';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -38,7 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (adminOk === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-        <div className="animate-pulse text-sm text-slate-500">Loading…</div>
+        <Loader size="lg" />
       </div>
     );
   }

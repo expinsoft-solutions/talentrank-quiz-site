@@ -14,6 +14,7 @@ export const LIKERT_LABELS_BY_SECTION: Record<string, readonly [string, string, 
   self_sabotage: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
   optimal_environment: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
   cognitive_architecture: ['Very Inaccurate', 'Moderately Inaccurate', 'Neutral', 'Moderately Accurate', 'Very Accurate'],
+  paid: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
 };
 
 const OPTIMAL_ENVIRONMENT_QUESTION_LABELS: Record<string, readonly [string, string, string, string, string]> = {

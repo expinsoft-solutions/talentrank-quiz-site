@@ -86,6 +86,10 @@ const SECTION_COPY: Record<string, { title: string; subtitle: string }> = {
     title: 'Optimal Work Environment',
     subtitle: 'Here we identify the conditions where you do your best, most sustainable work.',
   },
+  paid: {
+    title: 'Additional questions',
+    subtitle: 'Your responses help us personalize your Blueprint.',
+  },
 };
 
 export function LikertSection({
@@ -114,7 +118,7 @@ export function LikertSection({
   const [currentIndex, setCurrentIndex] = useState(() => Math.min(initialQuestionIndex, Math.max(0, total - 1)));
   const [slideDirection, setSlideDirection] = useState<'forward' | 'back'>('forward');
   const sectionKey = sectionId ?? 'personality_wiring';
-  const sectionCopy = SECTION_COPY[sectionKey];
+  const sectionCopy = SECTION_COPY[sectionKey] ?? SECTION_COPY['paid'] ?? SECTION_COPY['personality_wiring'];
   const isCognitive = sectionId === COGNITIVE_SECTION_ID;
   const [secondsRemaining, setSecondsRemaining] = useState(COGNITIVE_TIME_LIMIT_SECONDS);
   const [timeExpired, setTimeExpired] = useState(false);

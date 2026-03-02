@@ -84,6 +84,12 @@ export default function AssessmentPage() {
     }
     const sectionSteps = getOrderedSectionSteps(stored.sections, stored.questions, {});
     const steps = sectionSteps.length > 0 ? sectionSteps : getFallbackSectionSteps();
+    if (steps.length === 0) {
+      clearResumeState();
+      setResuming(false);
+      router.replace("/");
+      return;
+    }
     setSession({
       version: stored.version,
       sectionSteps: steps,
@@ -95,7 +101,7 @@ export default function AssessmentPage() {
     setCurrentSectionIndex(Math.min(stored.sectionIndex, Math.max(0, steps.length - 1)));
     setQuestionIndex(Math.max(0, stored.questionIndex));
     setResuming(false);
-  }, []);
+  }, [router]);
 
   // Start is on landing page (/); direct visit to /assessment with no session → redirect to /
   useEffect(() => {

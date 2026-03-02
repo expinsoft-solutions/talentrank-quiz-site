@@ -1,0 +1,133 @@
+[
+  {
+    "id": "paid_blueprint",
+    "name": "Blueprint Personalization",
+    "order_index": 1,
+    "isTimed": false,
+    "time_limit_seconds": null,
+    "purpose": "Blueprint personalization",
+    "enabled": true,
+    "questions": [
+      {
+        "id": "paid_1",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": null,
+        "dimension": null,
+        "statement": "What's the main reason you invested in your blueprint?",
+        "reverseScored": false
+      },
+      {
+        "id": "paid_2",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": null,
+        "dimension": null,
+        "statement": "What's your current work situation? (employed full-time, freelancing, job searching, building something on the side, etc.). What do you do specifically?",
+        "reverseScored": false
+      },
+      {
+        "id": "paid_3",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": null,
+        "dimension": null,
+        "statement": "If money and failure weren't factors, what would you spend your working hours doing?",
+        "reverseScored": false
+      },
+      {
+        "id": "paid_4",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": null,
+        "dimension": null,
+        "statement": "Do you want to start a business? Share details.",
+        "reverseScored": false
+      },
+      {
+        "id": "paid_5",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": null,
+        "dimension": null,
+        "statement": "Think about the last time you were close to a breakthrough but it fell apart. What happened?",
+        "reverseScored": false
+      },
+      {
+        "id": "paid_6",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": null,
+        "dimension": null,
+        "statement": "What's a goal you've had for 2+ years that you still haven't achieved? What do you tell yourself about why?",
+        "reverseScored": false
+      },
+      {
+        "id": "paid_7",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": null,
+        "dimension": null,
+        "statement": "When you imagine yourself succeeding at your biggest goal, what's the first negative thought that shows up?",
+        "reverseScored": false
+      },
+      {
+        "id": "paid_8",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": null,
+        "dimension": null,
+        "statement": "Who's the one person whose opinion of you matters most professionally? What do you think they currently think of you?",
+        "reverseScored": false
+      },
+      {
+        "id": "paid_9",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": null,
+        "dimension": null,
+        "statement": "When you need buy-in from someone important, what's your default approach? (Options: over-prepare and present logic / avoid until necessary / charm and read the room / send an email instead of asking in person)",
+        "reverseScored": false
+      },
+      {
+        "id": "paid_10",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": null,
+        "dimension": null,
+        "statement": "How do you typically respond when you get good advice? (implement immediately / research more first / wait until it feels right / acknowledge it then forget)",
+        "reverseScored": false
+      },
+      {
+        "id": "paid_11",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": null,
+        "dimension": null,
+        "statement": "What's the last self-improvement book, course, or program you bought? Did you finish it?",
+        "reverseScored": false
+      },
+      {
+        "id": "paid_12",
+        "type": "text",
+        "active": true,
+        "weight": 1,
+        "options": ["Student", "Employee", "Entrepreneur", "Unemployed", "Other"],
+        "dimension": null,
+        "statement": "I am a...",
+        "reverseScored": false
+      }
+    ]
+  }
+]

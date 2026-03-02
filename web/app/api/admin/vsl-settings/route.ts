@@ -32,11 +32,12 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: auth.status });
   }
 
+  const keys = ['vsl_enabled', 'vsl_type', 'vsl_url', 'vsl_wistia_media_id', 'vsl_headline', 'vsl_subtitle', 'vsl_testimonial', 'vsl_require_completion'];
   const admin = createAdminClient();
   const { data: rows, error } = await admin
     .from('site_settings')
     .select('key, value')
-    .in('key', ['vsl_enabled', 'vsl_type', 'vsl_url', 'vsl_embed_url']);
+    .in('key', keys);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -47,12 +48,17 @@ export async function GET() {
     map.set(row.key as string, row.value);
   }
 
+  const str = (k: string, def: string) => (typeof map.get(k) === 'string' ? (map.get(k) as string).replace(/^"|"$/g, '') : def);
   const vslEnabled = map.get('vsl_enabled') === true || map.get('vsl_enabled') === 'true';
-  const vslType = String(map.get('vsl_type') ?? 'internal').replace(/^"|"$/g, '') === 'external' ? 'external' : 'internal';
-  const vslUrl = typeof map.get('vsl_url') === 'string' ? (map.get('vsl_url') as string).replace(/^"|"$/g, '') : '/vsl';
-  const vslEmbedUrl = typeof map.get('vsl_embed_url') === 'string' ? (map.get('vsl_embed_url') as string).replace(/^"|"$/g, '') : '';
+  const vslType = str('vsl_type', 'internal') === 'external' ? 'external' : 'internal';
+  const vslUrl = str('vsl_url', '/vsl') || '/vsl';
+  const vslWistiaMediaId = str('vsl_wistia_media_id', 'mfxlojyy76') || 'mfxlojyy76';
+  const vslHeadline = str('vsl_headline', 'Your Custom Report Is Being Generated...');
+  const vslSubtitle = str('vsl_subtitle', 'Your AI Analysis takes 3-5 minutes to complete. While it processes, watch this explanation of what makes your assessment different from every personality test you\'ve taken.');
+  const vslTestimonial = str('vsl_testimonial', '"Something literally everyone should know about themselves" — Sarah M.');
+  const vslRequireCompletion = map.get('vsl_require_completion') !== false && map.get('vsl_require_completion') !== 'false';
 
-  return NextResponse.json({ vslEnabled, vslType, vslUrl, vslEmbedUrl });
+  return NextResponse.json({ vslEnabled, vslType, vslUrl, vslWistiaMediaId, vslHeadline, vslSubtitle, vslTestimonial, vslRequireCompletion });
 }
 
 export async function PATCH(request: Request) {
@@ -61,7 +67,16 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: auth.status });
   }
 
-  let body: { vslEnabled?: boolean; vslType?: string; vslUrl?: string; vslEmbedUrl?: string };
+  let body: {
+    vslEnabled?: boolean;
+    vslType?: string;
+    vslUrl?: string;
+    vslWistiaMediaId?: string;
+    vslHeadline?: string;
+    vslSubtitle?: string;
+    vslTestimonial?: string;
+    vslRequireCompletion?: boolean;
+  };
   try {
     body = await request.json();
   } catch {
@@ -71,7 +86,11 @@ export async function PATCH(request: Request) {
   const vslEnabled = body.vslEnabled === true;
   const vslType = body.vslType === 'external' ? 'external' : 'internal';
   const vslUrl = typeof body.vslUrl === 'string' ? body.vslUrl.trim() || '/vsl' : '/vsl';
-  const vslEmbedUrl = typeof body.vslEmbedUrl === 'string' ? body.vslEmbedUrl.trim() : '';
+  const vslWistiaMediaId = typeof body.vslWistiaMediaId === 'string' ? body.vslWistiaMediaId.trim() || 'mfxlojyy76' : 'mfxlojyy76';
+  const vslHeadline = typeof body.vslHeadline === 'string' ? body.vslHeadline.trim() || 'Your Custom Report Is Being Generated...' : 'Your Custom Report Is Being Generated...';
+  const vslSubtitle = typeof body.vslSubtitle === 'string' ? body.vslSubtitle.trim() : '';
+  const vslTestimonial = typeof body.vslTestimonial === 'string' ? body.vslTestimonial.trim() : '';
+  const vslRequireCompletion = body.vslRequireCompletion !== false;
 
   const admin = createAdminClient();
   const { error } = await admin.from('site_settings').upsert(
@@ -79,7 +98,11 @@ export async function PATCH(request: Request) {
       { key: 'vsl_enabled', value: vslEnabled, updated_at: new Date().toISOString() },
       { key: 'vsl_type', value: vslType, updated_at: new Date().toISOString() },
       { key: 'vsl_url', value: vslUrl, updated_at: new Date().toISOString() },
-      { key: 'vsl_embed_url', value: vslEmbedUrl, updated_at: new Date().toISOString() },
+      { key: 'vsl_wistia_media_id', value: vslWistiaMediaId, updated_at: new Date().toISOString() },
+      { key: 'vsl_headline', value: vslHeadline, updated_at: new Date().toISOString() },
+      { key: 'vsl_subtitle', value: vslSubtitle, updated_at: new Date().toISOString() },
+      { key: 'vsl_testimonial', value: vslTestimonial, updated_at: new Date().toISOString() },
+      { key: 'vsl_require_completion', value: vslRequireCompletion, updated_at: new Date().toISOString() },
     ],
     { onConflict: 'key' }
   );

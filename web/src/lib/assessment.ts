@@ -2,7 +2,7 @@ import type { DbQuestion, DbSection } from '@/types';
 
 export const COGNITIVE_SECTION_ID = 'cognitive_architecture';
 
-export type SectionQuestionType = 'text' | 'likert' | 'mcq' | 'binary';
+export type SectionQuestionType = 'text' | 'likert' | 'mcq' | 'binary' | 'short_answer';
 
 export interface SectionQuestion {
   id: string;
@@ -26,7 +26,7 @@ export interface GetOrderedSectionStepsOptions {
 
 function normalizeQuestionType(t: string | null | undefined): SectionQuestionType {
   const s = (t ?? '').toLowerCase();
-  if (s === 'text' || s === 'likert' || s === 'mcq' || s === 'binary') return s as SectionQuestionType;
+  if (s === 'text' || s === 'likert' || s === 'mcq' || s === 'binary' || s === 'short_answer') return s as SectionQuestionType;
   return 'likert';
 }
 

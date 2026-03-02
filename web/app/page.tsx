@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
+import { toast } from 'sonner';
 import { getResumeState, setResumeState, clearResumeState } from '@/lib/resume-storage';
 import { getOrderedSectionSteps, getFallbackSectionSteps } from '@/lib/assessment';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -26,14 +27,17 @@ export default function Home() {
     setLoading(true);
     try {
       const response = await fetch('/api/quiz');
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setError(data.error ?? 'Failed to load quiz');
+        const msg = data.error ?? 'Failed to load quiz';
+        setError(msg);
+        toast.error(msg);
         setLoading(false);
         return;
       }
       if (data?.error) {
         setError(data.error);
+        toast.error(data.error);
         setLoading(false);
         return;
       }
@@ -50,14 +54,20 @@ export default function Home() {
           questions,
           responses: {},
         });
+        setLoading(false);
         router.push('/assessment');
       } else {
-        setError('No questions available');
+        const msg = 'No questions available. Run: cd web && npm run questionnaire:load';
+        setError(msg);
+        toast.error(msg);
         setLoading(false);
       }
-    } catch {
-      setError('Network error');
+    } catch (e) {
+      const msg = 'Network error. Check console for details.';
+      setError(msg);
+      toast.error(msg);
       setLoading(false);
+      console.error('Quiz start error:', e);
     }
   }
 
@@ -73,7 +83,7 @@ export default function Home() {
           >
             {loading ? (
               <span className="inline-flex items-center gap-1.5">
-                <Loader size="sm" className="border-t-white" />
+                <Loader size="sm" className="text-white" />
                 Starting…
               </span>
             ) : (
@@ -104,7 +114,7 @@ export default function Home() {
             >
               {loading ? (
                 <span className="inline-flex items-center gap-2">
-                  <Loader size="sm" className="border-t-white" />
+                  <Loader size="sm" className="text-white" />
                   Starting…
                 </span>
               ) : hasResume ? (
@@ -235,7 +245,7 @@ export default function Home() {
             >
               {loading ? (
                 <span className="inline-flex items-center gap-2">
-                  <Loader size="sm" className="border-t-white" />
+                  <Loader size="sm" className="text-white" />
                   Starting…
                 </span>
               ) : hasResume ? (

@@ -122,6 +122,13 @@ export function SectionWithMixedQuestions({
     if (q.type === 'text') {
       const raw = typeof val === 'string' ? val.trim() : '';
       if (raw) onResponseSaved?.(questionId, undefined, raw);
+    } else if (q.type === 'mcq' || q.type === 'binary') {
+      if (typeof val === 'string') {
+        onResponseSaved?.(questionId, undefined, val);
+      } else {
+        const num = typeof val === 'number' ? val : undefined;
+        if (num != null) onResponseSaved?.(questionId, num);
+      }
     } else {
       const num = typeof val === 'number' ? val : undefined;
       if (num != null) onResponseSaved?.(questionId, num);
@@ -139,6 +146,10 @@ export function SectionWithMixedQuestions({
         toast.error(err);
         return;
       }
+    } else if (
+      (currentQuestion.type === 'mcq' || currentQuestion.type === 'binary') &&
+      typeof val === 'string'
+    ) {
     } else if (val === undefined || val === null || val === '') {
       setAnswerError('Please select an answer.');
       toast.error('Please select an answer.');
@@ -175,16 +186,16 @@ export function SectionWithMixedQuestions({
       currentQuestion.type === 'likert' ||
       currentQuestion.type === 'mcq' ||
       currentQuestion.type === 'binary';
-    if (isChoiceType) {
+    const numericVal = typeof v === 'number' ? v : undefined;
+    if (isChoiceType && numericVal != null) {
       if (likertAutoAdvanceRef.current) clearTimeout(likertAutoAdvanceRef.current);
       const isLast = currentIndex >= total - 1;
       const idx = currentIndex;
       const questionId = currentQuestion.id;
-      const numericVal = typeof v === 'number' ? v : undefined;
       likertAutoAdvanceRef.current = setTimeout(() => {
         likertAutoAdvanceRef.current = null;
         skipSyncRef.current = true;
-        if (numericVal != null) onResponseSaved?.(questionId, numericVal);
+        onResponseSaved?.(questionId, numericVal);
         if (isLast) {
           onComplete();
         } else {
@@ -257,7 +268,10 @@ export function SectionWithMixedQuestions({
                 onEnter={handleNext}
                 error={answerError}
               />
-              {currentQuestion.type === 'text' && (
+              {(currentQuestion.type === 'text' ||
+                ((currentQuestion.type === 'mcq' ||
+                  currentQuestion.type === 'binary') &&
+                  typeof currentVal === 'string')) && (
                 <div className="flex justify-end pt-2">
                   <Button
                     type="button"

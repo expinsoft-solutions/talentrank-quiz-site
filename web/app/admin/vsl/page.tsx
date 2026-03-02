@@ -3,15 +3,21 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Video } from 'lucide-react';
+import { Video, PlayCircle, FileText } from 'lucide-react';
+import { Loader } from '@/components/ui/loader';
 
 export default function AdminVslPage() {
   const [vslEnabled, setVslEnabled] = useState(true);
   const [vslType, setVslType] = useState<'internal' | 'external'>('internal');
   const [vslUrl, setVslUrl] = useState('/vsl');
-  const [vslEmbedUrl, setVslEmbedUrl] = useState('');
+  const [vslWistiaMediaId, setVslWistiaMediaId] = useState('mfxlojyy76');
+  const [vslHeadline, setVslHeadline] = useState('Your Custom Report Is Being Generated...');
+  const [vslSubtitle, setVslSubtitle] = useState('Your AI Analysis takes 3-5 minutes to complete. While it processes, watch this explanation of what makes your assessment different from every personality test you\'ve taken.');
+  const [vslTestimonial, setVslTestimonial] = useState('"Something literally everyone should know about themselves" — Sarah M.');
+  const [vslRequireCompletion, setVslRequireCompletion] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -25,7 +31,11 @@ export default function AdminVslPage() {
         setVslEnabled(data.vslEnabled ?? true);
         setVslType(data.vslType === 'external' ? 'external' : 'internal');
         setVslUrl(typeof data.vslUrl === 'string' ? data.vslUrl : '/vsl');
-        setVslEmbedUrl(typeof data.vslEmbedUrl === 'string' ? data.vslEmbedUrl : '');
+        setVslWistiaMediaId(typeof data.vslWistiaMediaId === 'string' ? data.vslWistiaMediaId : 'mfxlojyy76');
+        setVslHeadline(typeof data.vslHeadline === 'string' ? data.vslHeadline : 'Your Custom Report Is Being Generated...');
+        setVslSubtitle(typeof data.vslSubtitle === 'string' ? data.vslSubtitle : 'Your AI Analysis takes 3-5 minutes to complete. While it processes, watch this explanation of what makes your assessment different from every personality test you\'ve taken.');
+        setVslTestimonial(typeof data.vslTestimonial === 'string' ? data.vslTestimonial : '"Something literally everyone should know about themselves" — Sarah M.');
+        setVslRequireCompletion(data.vslRequireCompletion !== false);
       })
       .catch(() => toast.error('Failed to load VSL settings'))
       .finally(() => setLoading(false));
@@ -42,7 +52,11 @@ export default function AdminVslPage() {
           vslEnabled,
           vslType,
           vslUrl: vslUrl.trim() || '/vsl',
-          vslEmbedUrl: vslEmbedUrl.trim(),
+          vslWistiaMediaId: vslWistiaMediaId.trim() || 'mfxlojyy76',
+          vslHeadline: vslHeadline.trim() || 'Your Custom Report Is Being Generated...',
+          vslSubtitle: vslSubtitle.trim(),
+          vslTestimonial: vslTestimonial.trim(),
+          vslRequireCompletion,
         }),
       });
       const data = await res.json();
@@ -51,7 +65,7 @@ export default function AdminVslPage() {
         setSaving(false);
         return;
       }
-      toast.success('VSL settings saved');
+      toast.success('Video service settings saved');
     } catch {
       toast.error('Failed to save');
     } finally {
@@ -61,97 +75,167 @@ export default function AdminVslPage() {
 
   if (loading) {
     return (
-      <div className="text-sm text-slate-500">Loading VSL settings…</div>
+      <div className="flex items-center justify-center py-20">
+        <Loader size="lg" />
+      </div>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-8">
       <h1 className="text-2xl font-semibold">VSL customization</h1>
       <p className="text-sm text-slate-500">
-        Configure the video / report-generation page shown after users complete the assessment. When VSL is enabled, users are redirected here before seeing results.
+        Configure the video service shown after users complete the assessment. When enabled, users are redirected to the video page before seeing results.
       </p>
 
-      <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6">
-        <div className="flex items-center gap-2">
-          <Video className="w-5 h-5 text-slate-500" />
-          <h2 className="font-medium">VSL settings</h2>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            id="vsl-enabled"
-            checked={vslEnabled}
-            onChange={(e) => setVslEnabled(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-          />
-          <Label htmlFor="vsl-enabled" className="cursor-pointer">
-            Enable VSL redirect after assessment
-          </Label>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Redirect type</Label>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="vsl-type"
-                checked={vslType === 'internal'}
-                onChange={() => setVslType('internal')}
-                className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              <span>Internal</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="vsl-type"
-                checked={vslType === 'external'}
-                onChange={() => setVslType('external')}
-                className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              <span>External</span>
-            </label>
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6">
+          <div className="flex items-center gap-2">
+            <Video className="w-5 h-5 text-slate-500" />
+            <h2 className="font-medium">Video service</h2>
           </div>
-          <p className="text-xs text-slate-500">
-            Internal: redirect to your /vsl page. External: redirect to the URL below (e.g. another domain). assessment_id and client_token are appended as query params for external.
-          </p>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="vsl-url">VSL URL</Label>
-          <Input
-            id="vsl-url"
-            type="text"
-            value={vslUrl}
-            onChange={(e) => setVslUrl(e.target.value)}
-            placeholder="/vsl"
-            className="h-10"
-          />
-          <p className="text-xs text-slate-500">
-            For internal: path only (e.g. /vsl). For external: full URL (e.g. https://app.talentrank.io/video).
-          </p>
-        </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="vsl-enabled"
+              checked={vslEnabled}
+              onChange={(e) => setVslEnabled(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <Label htmlFor="vsl-enabled" className="cursor-pointer">
+              Enable video page redirect after assessment
+            </Label>
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="vsl-embed-url">Video embed URL</Label>
-          <Input
-            id="vsl-embed-url"
-            type="url"
-            value={vslEmbedUrl}
-            onChange={(e) => setVslEmbedUrl(e.target.value)}
-            placeholder="https://www.youtube.com/embed/..."
-            className="h-10"
-          />
-          <p className="text-xs text-slate-500">
-            YouTube embed URL or other iframe-compatible video URL shown on the VSL page (e.g. https://www.youtube.com/embed/VIDEO_ID).
+          <div className="space-y-2">
+            <Label htmlFor="vsl-wistia-media-id">Wistia media ID</Label>
+            <Input
+              id="vsl-wistia-media-id"
+              type="text"
+              value={vslWistiaMediaId}
+              onChange={(e) => setVslWistiaMediaId(e.target.value)}
+              placeholder="mfxlojyy76"
+              className="h-10"
+            />
+            <p className="text-xs text-slate-500">
+              From your Wistia video URL: wistia.com/medias/mfxlojyy76
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="vsl-require-completion"
+              checked={vslRequireCompletion}
+              onChange={(e) => setVslRequireCompletion(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <Label htmlFor="vsl-require-completion" className="cursor-pointer">
+              Require video completion before showing results
+            </Label>
+          </div>
+          <p className="text-xs text-slate-500 -mt-2">
+            When checked, users must watch the video to completion (or have no video) to proceed.
           </p>
-        </div>
+        </section>
+
+        <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6">
+          <div className="flex items-center gap-2">
+            <PlayCircle className="w-5 h-5 text-slate-500" />
+            <h2 className="font-medium">Redirect</h2>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Redirect type</Label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="vsl-type"
+                  checked={vslType === 'internal'}
+                  onChange={() => setVslType('internal')}
+                  className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>Internal</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="vsl-type"
+                  checked={vslType === 'external'}
+                  onChange={() => setVslType('external')}
+                  className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>External</span>
+              </label>
+            </div>
+            <p className="text-xs text-slate-500">
+              Internal: redirect to your site. External: redirect to another domain. assessmentId and clientToken are appended as query params.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="vsl-url">VSL URL</Label>
+            <Input
+              id="vsl-url"
+              type="text"
+              value={vslUrl}
+              onChange={(e) => setVslUrl(e.target.value)}
+              placeholder="/vsl"
+              className="h-10"
+            />
+            <p className="text-xs text-slate-500">
+              Internal: path only (e.g. /vsl). External: full URL.
+            </p>
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-slate-500" />
+            <h2 className="font-medium">Page copy</h2>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="vsl-headline">Headline</Label>
+            <Input
+              id="vsl-headline"
+              type="text"
+              value={vslHeadline}
+              onChange={(e) => setVslHeadline(e.target.value)}
+              placeholder="Your Custom Report Is Being Generated..."
+              className="h-10"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="vsl-subtitle">Subtitle</Label>
+            <Textarea
+              id="vsl-subtitle"
+              value={vslSubtitle}
+              onChange={(e) => setVslSubtitle(e.target.value)}
+              placeholder="Your AI Analysis takes 3-5 minutes..."
+              rows={3}
+              className="resize-none"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="vsl-testimonial">Testimonial</Label>
+            <Input
+              id="vsl-testimonial"
+              type="text"
+              value={vslTestimonial}
+              onChange={(e) => setVslTestimonial(e.target.value)}
+              placeholder='"Something literally everyone should know..."'
+              className="h-10"
+            />
+          </div>
+        </section>
 
         <Button type="submit" disabled={saving}>
-          {saving ? 'Saving…' : 'Save VSL settings'}
+          {saving ? 'Saving…' : 'Save video service settings'}
         </Button>
       </form>
     </div>
