@@ -9,7 +9,7 @@ import { getVslConfig } from '@/lib/site-settings';
 import { SiteHeader } from '@/components/SiteHeader';
 
 const PENDING_KEY = 'talentrank_pending_submit';
-const REDIRECT_PAUSED = true;
+const REDIRECT_PAUSED = false;
 
 function VslContent() {
   const searchParams = useSearchParams();
