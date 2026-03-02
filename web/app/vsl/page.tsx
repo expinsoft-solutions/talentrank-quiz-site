@@ -255,9 +255,10 @@ function VslContent() {
         </p>
 
         <div className="w-full max-w-4xl mx-auto relative aspect-video bg-black rounded-xl overflow-hidden shadow-xl">
-          <div className="absolute inset-0 w-full h-full [&>*]:!block [&>*]:!w-full [&>*]:!h-full [&>*]:!min-h-full">
+          <div className="absolute inset-0 w-full h-full [&_wistia-player]:!absolute [&_wistia-player]:!inset-0 [&_wistia-player]:!w-full [&_wistia-player]:!h-full">
             <WistiaPlayer
               mediaId={wistiaMediaId}
+              aspect={16 / 9}
               onEnded={() => setVideoComplete(true)}
             />
           </div>
