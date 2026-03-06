@@ -15,15 +15,36 @@ const corsHeaders = {
 const ANTHROPIC_VERSION = '2023-06-01';
 const DEFAULT_MODEL = 'claude-3-haiku-20240307';
 const MAX_TOKENS = 1024;
-const RESULTS_BASE_URL = 'https://app.talentrank.io/results?recordId=';
-
-function mockSendReportToCustomer(opts: { to: string; firstName: string; reportText: string; resultsUrl: string }) {
-  console.log('[MOCK] Would send report email to customer:', {
-    to: opts.to,
-    subject: `Your TalentRank Assessment Report`,
-    bodyPreview: `Hi ${opts.firstName}, your personalized report is ready. View results: ${opts.resultsUrl}`,
-    resultsUrl: opts.resultsUrl,
-  });
+async function sendReportToCustomer(opts: {
+  to: string;
+  firstName: string;
+  reportText: string;
+  resultsUrl: string;
+  attachPdf?: boolean;
+}): Promise<void> {
+  const siteUrl = Deno.env.get('SITE_URL');
+  const emailApiSecret = Deno.env.get('EMAIL_API_SECRET');
+  if (!siteUrl || !emailApiSecret) {
+    console.log('[report-email] Skipped: SITE_URL or EMAIL_API_SECRET not configured');
+    return;
+  }
+  const endpoint = `${siteUrl.replace(/\/$/, '')}/api/send-report-email`;
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${emailApiSecret}`,
+      },
+      body: JSON.stringify(opts),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('[report-email] Failed:', res.status, err);
+    }
+  } catch (e) {
+    console.error('[report-email] Error:', e);
+  }
 }
 
 Deno.serve(async (req) => {
@@ -214,13 +235,16 @@ Deno.serve(async (req) => {
 
     const firstName = (userRow?.first_name ?? '').trim() || 'There';
     const customerEmail = typeof userRow?.email === 'string' ? userRow.email.trim() : null;
-    const resultsUrl = `${RESULTS_BASE_URL}${assessmentId}`;
+    const siteUrl = Deno.env.get('SITE_URL') ?? 'https://app.talentrank.io';
+    const base = siteUrl.replace(/\/$/, '');
+    const resultsUrl = `${base}/assessment/result?assessmentId=${encodeURIComponent(assessmentId)}&clientToken=${encodeURIComponent(clientToken)}`;
     if (customerEmail) {
-      mockSendReportToCustomer({
+      await sendReportToCustomer({
         to: customerEmail,
         firstName,
         reportText,
         resultsUrl,
+        attachPdf: true,
       });
     }
 
