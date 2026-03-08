@@ -21,6 +21,9 @@ async function sendReportToCustomer(opts: {
   reportText: string;
   resultsUrl: string;
   attachPdf?: boolean;
+  mbti?: string | null;
+  cognitivePercentile?: number | null;
+  axisStrengths?: Record<string, number> | null;
 }): Promise<void> {
   const siteUrl = Deno.env.get('SITE_URL');
   const emailApiSecret = Deno.env.get('EMAIL_API_SECRET');
@@ -143,6 +146,7 @@ Deno.serve(async (req) => {
     }
 
     const paidResponses = (assessmentRow.paid_responses ?? {}) as Record<string, { answerRaw?: string }>;
+    const isPaidReport = Object.keys(paidResponses).length > 0;
     if (Object.keys(paidResponses).length > 0 && questionnaireData?.questionnaire) {
       const parsed = parseQuestionnaire(questionnaireData.questionnaire, 'paid');
       const paidQuestionMap = new Map(parsed.questions.map((q) => [q.id, q.text]));
@@ -168,13 +172,26 @@ Deno.serve(async (req) => {
     const userMessage = buildUserMessage(assessmentDataBlock);
 
     let systemPrompt = SYSTEM_PROMPT;
-    const { data: promptRow } = await supabase
+    const { data: promptRows } = await supabase
       .from('site_settings')
-      .select('value')
-      .eq('key', 'report_system_prompt')
-      .single();
-    if (promptRow?.value != null && typeof promptRow.value === 'string' && promptRow.value.trim()) {
-      systemPrompt = promptRow.value.trim();
+      .select('key, value')
+      .in('key', ['report_system_prompt', 'paid_report_system_prompt']);
+    const promptMap = new Map<string, unknown>();
+    for (const row of promptRows ?? []) {
+      promptMap.set(row.key as string, row.value);
+    }
+    const reportSystemPrompt =
+      typeof promptMap.get('report_system_prompt') === 'string'
+        ? String(promptMap.get('report_system_prompt')).trim()
+        : '';
+    const paidReportSystemPrompt =
+      typeof promptMap.get('paid_report_system_prompt') === 'string'
+        ? String(promptMap.get('paid_report_system_prompt')).trim()
+        : '';
+    if (isPaidReport && paidReportSystemPrompt) {
+      systemPrompt = paidReportSystemPrompt;
+    } else if (reportSystemPrompt) {
+      systemPrompt = reportSystemPrompt;
     }
 
     let model = DEFAULT_MODEL;
@@ -245,6 +262,12 @@ Deno.serve(async (req) => {
         reportText,
         resultsUrl,
         attachPdf: true,
+        mbti: assessmentRow.mbti ?? null,
+        cognitivePercentile:
+          typeof assessmentRow.cognitive_percentile === 'number'
+            ? assessmentRow.cognitive_percentile
+            : null,
+        axisStrengths,
       });
     }
 

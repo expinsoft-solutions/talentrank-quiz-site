@@ -23,6 +23,7 @@ interface ModelOption {
 
 export default function AdminPromptPage() {
   const [reportSystemPrompt, setReportSystemPrompt] = useState('');
+  const [paidReportSystemPrompt, setPaidReportSystemPrompt] = useState('');
   const [reportModel, setReportModel] = useState(DEFAULT_MODEL);
   const [models, setModels] = useState<ModelOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,11 +40,13 @@ export default function AdminPromptPage() {
     ])
       .then(([promptData, modelsData]) => {
         setReportSystemPrompt(promptData.reportSystemPrompt ?? '');
+        setPaidReportSystemPrompt(promptData.paidReportSystemPrompt ?? '');
         setReportModel(promptData.reportModel ?? DEFAULT_MODEL);
         setModels(modelsData.models ?? []);
       })
       .catch(() => {
         setReportSystemPrompt('');
+        setPaidReportSystemPrompt('');
         setReportModel(DEFAULT_MODEL);
         setModels([]);
       })
@@ -57,7 +60,7 @@ export default function AdminPromptPage() {
       const res = await fetch('/api/admin/report-prompt', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportSystemPrompt, reportModel }),
+        body: JSON.stringify({ reportSystemPrompt, paidReportSystemPrompt, reportModel }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -128,6 +131,22 @@ export default function AdminPromptPage() {
             />
             <p className="text-xs text-slate-500">
               High-level instructions given to Claude before user data. Leave empty for the built-in prompt.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="paid-report-prompt">Paid report system prompt</Label>
+            <Textarea
+              id="paid-report-prompt"
+              value={paidReportSystemPrompt}
+              onChange={(e) => setPaidReportSystemPrompt(e.target.value)}
+              placeholder="Leave empty to use regular system prompt/default for paid users…"
+              disabled={loading}
+              className="min-h-[280px] font-mono text-sm resize-y"
+              spellCheck={false}
+            />
+            <p className="text-xs text-slate-500">
+              Used only when the assessment attempt includes paid responses. If empty, regular system prompt is used.
             </p>
           </div>
 

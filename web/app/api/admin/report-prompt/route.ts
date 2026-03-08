@@ -36,7 +36,7 @@ export async function GET() {
   const { data: rows, error } = await admin
     .from('site_settings')
     .select('key, value')
-    .in('key', ['report_system_prompt', 'report_model']);
+    .in('key', ['report_system_prompt', 'paid_report_system_prompt', 'report_model']);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -49,12 +49,16 @@ export async function GET() {
 
   const reportSystemPrompt =
     typeof map.get('report_system_prompt') === 'string' ? (map.get('report_system_prompt') as string) : '';
+  const paidReportSystemPrompt =
+    typeof map.get('paid_report_system_prompt') === 'string'
+      ? (map.get('paid_report_system_prompt') as string)
+      : '';
   const defaultModel = 'claude-3-haiku-20240307';
   const rawModel = map.get('report_model');
   const reportModel =
     typeof rawModel === 'string' && rawModel.trim() ? (rawModel as string).trim() : defaultModel;
 
-  return NextResponse.json({ reportSystemPrompt, reportModel });
+  return NextResponse.json({ reportSystemPrompt, paidReportSystemPrompt, reportModel });
 }
 
 export async function PATCH(request: Request) {
@@ -63,7 +67,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: auth.status });
   }
 
-  let body: { reportSystemPrompt?: string; reportModel?: string };
+  let body: { reportSystemPrompt?: string; paidReportSystemPrompt?: string; reportModel?: string };
   try {
     body = await request.json();
   } catch {
@@ -71,6 +75,8 @@ export async function PATCH(request: Request) {
   }
 
   const reportSystemPrompt = typeof body.reportSystemPrompt === 'string' ? body.reportSystemPrompt : '';
+  const paidReportSystemPrompt =
+    typeof body.paidReportSystemPrompt === 'string' ? body.paidReportSystemPrompt : '';
   const reportModel =
     typeof body.reportModel === 'string'
       ? body.reportModel
@@ -80,6 +86,7 @@ export async function PATCH(request: Request) {
   const { error } = await admin.from('site_settings').upsert(
     [
       { key: 'report_system_prompt', value: reportSystemPrompt, updated_at: new Date().toISOString() },
+      { key: 'paid_report_system_prompt', value: paidReportSystemPrompt, updated_at: new Date().toISOString() },
       { key: 'report_model', value: reportModel, updated_at: new Date().toISOString() },
     ],
     { onConflict: 'key' }

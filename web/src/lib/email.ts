@@ -1,12 +1,9 @@
 import nodemailer from 'nodemailer';
-import { readFile } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
+import { generateReportPdfBuffer, type ReportPdfProfile } from './report-pdf';
+import { uploadReportPdfToS3 } from './report-storage';
 
 const GMAIL_USER = process.env.GMAIL_USER ?? 'results@talentrank.io';
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
-
-const BLUEPRINT_PDF_PATH = path.join(process.cwd(), 'public', 'blueprint.pdf');
 
 function getTransport() {
   if (!GMAIL_APP_PASSWORD) return null;
@@ -25,6 +22,9 @@ export interface SendReportEmailParams {
   reportText: string;
   resultsUrl: string;
   attachPdf?: boolean;
+  mbti?: ReportPdfProfile['mbti'];
+  cognitivePercentile?: ReportPdfProfile['cognitivePercentile'];
+  axisStrengths?: ReportPdfProfile['axisStrengths'];
 }
 
 export async function sendReportEmail(params: SendReportEmailParams): Promise<{ ok: boolean; error?: string }> {
@@ -33,9 +33,36 @@ export async function sendReportEmail(params: SendReportEmailParams): Promise<{ 
     return { ok: false, error: 'Email not configured (GMAIL_APP_PASSWORD required)' };
   }
 
-  const { to, firstName, reportText, resultsUrl, attachPdf } = params;
+  const { to, firstName, reportText, resultsUrl, attachPdf, mbti, cognitivePercentile, axisStrengths } = params;
   const subject = 'Your TalentRank Assessment Report';
-  const pdfNote = attachPdf ? ' Your Blueprint PDF is attached.' : '';
+  let pdfNote = '';
+  let pdfUrl = '';
+  const attachments: nodemailer.SendMailOptions['attachments'] = [];
+  if (attachPdf) {
+    let pdfBuffer: Buffer;
+    try {
+      pdfBuffer = await generateReportPdfBuffer(firstName, reportText, resultsUrl, {
+        mbti,
+        cognitivePercentile,
+        axisStrengths: axisStrengths ?? null,
+      });
+    } catch {
+      return { ok: false, error: 'Failed to generate report PDF' };
+    }
+    try {
+      pdfUrl = await uploadReportPdfToS3(firstName, pdfBuffer);
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : 'Failed to upload report PDF to S3' };
+    }
+    attachments.push({
+      filename: 'Your-TalentRank-Blueprint.pdf',
+      content: pdfBuffer,
+    });
+    pdfNote = ` Your Blueprint PDF is attached and also available here: ${pdfUrl}`;
+  }
+  const pdfLinkHtml = pdfUrl
+    ? `<p><a href="${pdfUrl}" style="display: inline-block; background-color: #0f766e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 500;">Download your PDF blueprint</a></p>`
+    : '';
   const html = `
 <!DOCTYPE html>
 <html>
@@ -47,25 +74,13 @@ export async function sendReportEmail(params: SendReportEmailParams): Promise<{ 
   <p>Hi ${firstName},</p>
   <p>Your personalized TalentRank report is ready.${pdfNote}</p>
   <p><a href="${resultsUrl}" style="display: inline-block; background-color: #4c1d95; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 500;">View your results</a></p>
+  ${pdfLinkHtml}
   <p>See you at the top,<br>The TalentRank Team</p>
 </body>
 </html>
   `.trim();
 
-  const text = `Hi ${firstName},\n\nYour personalized TalentRank report is ready.${pdfNote}\n\nView your results: ${resultsUrl}\n\nSee you at the top,\nThe TalentRank Team`;
-
-  const attachments: nodemailer.SendMailOptions['attachments'] = [];
-  if (attachPdf && existsSync(BLUEPRINT_PDF_PATH)) {
-    try {
-      const pdfBuffer = await readFile(BLUEPRINT_PDF_PATH);
-      attachments.push({
-        filename: 'Your-TalentRank-Blueprint.pdf',
-        content: pdfBuffer,
-      });
-    } catch {
-      //
-    }
-  }
+  const text = `Hi ${firstName},\n\nYour personalized TalentRank report is ready.${pdfNote}\n\nView your results: ${resultsUrl}${pdfUrl ? `\nDownload your PDF blueprint: ${pdfUrl}` : ''}\n\nSee you at the top,\nThe TalentRank Team`;
 
   try {
     await transport.sendMail({
