@@ -9,8 +9,11 @@ export interface SectionQuestion {
   question: string;
   type: SectionQuestionType;
   options?: string[];
+  optionImageUrls?: (string | null)[];
   keyed?: 'positive' | 'negative';
   reverseScored?: boolean;
+  imageUrl?: string | null;
+  imageUrls?: string[];
 }
 
 export interface SectionStep {
@@ -48,8 +51,11 @@ export function getOrderedSectionSteps(
       question: q.text,
       type: normalizeQuestionType(q.type),
       ...(q.options && q.options.length > 0 && { options: [...q.options] }),
+      ...(q.optionImageUrls && q.optionImageUrls.length > 0 && { optionImageUrls: [...q.optionImageUrls] }),
       keyed: q.reverseScored ? 'negative' : 'positive',
       reverseScored: q.reverseScored ?? false,
+      ...(q.imageUrl != null && q.imageUrl !== '' && { imageUrl: q.imageUrl }),
+      ...(q.imageUrls && q.imageUrls.length > 0 && { imageUrls: [...q.imageUrls] }),
     }));
     return {
       sectionId: section.id,

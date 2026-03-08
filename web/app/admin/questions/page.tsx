@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { GripVertical, Plus, Trash2 } from 'lucide-react';
+import { GripVertical, ImagePlus, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { Switch } from '@/components/ui/switch';
@@ -30,6 +30,9 @@ interface Question {
   correct_answer?: string | null;
   active?: boolean;
   options?: string[];
+  imageUrl?: string | null;
+  imageUrls?: string[];
+  optionImageUrls?: (string | null)[];
 }
 
 function QuestionsList({
@@ -40,6 +43,11 @@ function QuestionsList({
   reorderQuestions,
   addQuestion,
   deleteQuestion,
+  onUploadImage,
+  onUploadOptionImage,
+  onRemoveImage,
+  onRemoveOptionImage,
+  uploadingImageQuestionId,
   dragRef,
   dragOver,
   setDragOver,
@@ -51,6 +59,26 @@ function QuestionsList({
   reorderQuestions: (sectionId: string, fromIndex: number, toIndex: number) => void;
   addQuestion: (sectionId: string) => void;
   deleteQuestion: (sectionId: string, questionId: string) => void;
+  onUploadImage: (sectionId: string, questionId: string, files: File[]) => Promise<void>;
+  onUploadOptionImage: (
+    sectionId: string,
+    questionId: string,
+    optionIndex: number,
+    file: File
+  ) => Promise<void>;
+  onRemoveImage: (
+    sectionId: string,
+    questionId: string,
+    imageUrl: string,
+    imageIndex: number
+  ) => Promise<void>;
+  onRemoveOptionImage: (
+    sectionId: string,
+    questionId: string,
+    optionIndex: number,
+    imageUrl: string
+  ) => Promise<void>;
+  uploadingImageQuestionId: string | null;
   dragRef: React.MutableRefObject<{ sectionId: string; index: number } | null>;
   dragOver: { sectionId: string; index: number } | null;
   setDragOver: (v: { sectionId: string; index: number } | null) => void;
@@ -147,6 +175,7 @@ function QuestionsList({
                           onChange={(e) => {
                             const newType = e.target.value;
                             const baseOpts = q.options ?? [];
+                            const baseOptionImages = q.optionImageUrls ?? [];
                             const opts =
                               newType === 'mcq'
                                 ? [...baseOpts, '', '', ''].slice(0, 4)
@@ -155,9 +184,16 @@ function QuestionsList({
                                   : newType === 'text'
                                     ? baseOpts
                                     : [];
+                            const optionImageUrls =
+                              newType === 'mcq'
+                                ? [...baseOptionImages, null, null, null].slice(0, 4)
+                                : newType === 'binary'
+                                  ? [...baseOptionImages, null].slice(0, 2)
+                                  : [];
                             updateQuestion(section.id, q.id, {
                               type: newType,
                               options: newType === 'likert' ? [] : opts,
+                              optionImageUrls,
                             });
                           }}
                           className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
@@ -182,11 +218,68 @@ function QuestionsList({
                           className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
                         />
                       </div>
+                      <div className="md:col-span-2">
+                        <label className="text-xs text-slate-500 block mb-1">Question image</label>
+                        <label className="inline-flex items-center gap-1.5 rounded border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer w-fit">
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            multiple
+                            className="hidden"
+                            disabled={uploadingImageQuestionId === `${section.id}:${q.id}`}
+                            onChange={(e) => {
+                              const files = e.target.files ? Array.from(e.target.files) : [];
+                              if (files.length > 0) {
+                                onUploadImage(section.id, q.id, files);
+                                e.target.value = '';
+                              }
+                            }}
+                          />
+                          {uploadingImageQuestionId === `${section.id}:${q.id}` ? (
+                            <Loader size="sm" />
+                          ) : (
+                            <ImagePlus className="h-4 w-4" />
+                          )}
+                          {uploadingImageQuestionId === `${section.id}:${q.id}` ? 'Uploading…' : 'Upload images'}
+                        </label>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Optional. JPEG, PNG, WebP or GIF, max 5MB.
+                        </p>
+                        {(q.imageUrls && q.imageUrls.length > 0) ||
+                        (q.imageUrl && q.imageUrl.trim()) ? (
+                          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {(q.imageUrls && q.imageUrls.length > 0
+                              ? q.imageUrls
+                              : q.imageUrl && q.imageUrl.trim()
+                                ? [q.imageUrl]
+                                : []
+                            ).map((img, idx) => (
+                              <div key={`${img}-${idx}`} className="flex items-center gap-2">
+                                <img
+                                  src={img}
+                                  alt=""
+                                  className="max-h-24 rounded border border-slate-200 dark:border-slate-700 object-contain"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => onRemoveImage(section.id, q.id, img, idx)}
+                                  disabled={uploadingImageQuestionId === `${section.id}:${q.id}:remove:${idx}`}
+                                  className="text-xs text-slate-500 hover:text-red-600 dark:hover:text-red-400"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                     {q.type === 'mcq' && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[0, 1, 2, 3].map((i) => {
                           const opts = [...(q.options ?? []), '', '', ''].slice(0, 4);
+                          const optionImages = [...(q.optionImageUrls ?? []), null, null, null].slice(0, 4);
+                          const optionImageUrl = optionImages[i];
                           return (
                             <div key={i}>
                               <label className="text-xs text-slate-500 block mb-1">
@@ -203,6 +296,51 @@ function QuestionsList({
                                 placeholder={`Option ${i + 1}`}
                                 className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
                               />
+                              <div className="mt-2 flex items-center gap-2">
+                                <label className="inline-flex items-center gap-1.5 rounded border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer w-fit">
+                                  <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp,image/gif"
+                                    className="hidden"
+                                    disabled={uploadingImageQuestionId === `${section.id}:${q.id}:option:${i}`}
+                                    onChange={(e) => {
+                                      const f = e.target.files?.[0];
+                                      if (f) {
+                                        onUploadOptionImage(section.id, q.id, i, f);
+                                        e.target.value = '';
+                                      }
+                                    }}
+                                  />
+                                  {uploadingImageQuestionId === `${section.id}:${q.id}:option:${i}` ? (
+                                    <Loader size="sm" />
+                                  ) : (
+                                    <ImagePlus className="h-3.5 w-3.5" />
+                                  )}
+                                  {uploadingImageQuestionId === `${section.id}:${q.id}:option:${i}` ? 'Uploading…' : 'Upload image'}
+                                </label>
+                                {optionImageUrl ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      optionImageUrl &&
+                                      onRemoveOptionImage(section.id, q.id, i, optionImageUrl)
+                                    }
+                                    disabled={
+                                      uploadingImageQuestionId === `${section.id}:${q.id}:option:${i}:remove`
+                                    }
+                                    className="text-xs text-slate-500 hover:text-red-600 dark:hover:text-red-400"
+                                  >
+                                    Remove image
+                                  </button>
+                                ) : null}
+                              </div>
+                              {optionImageUrl ? (
+                                <img
+                                  src={optionImageUrl}
+                                  alt=""
+                                  className="mt-2 max-h-20 rounded border border-slate-200 dark:border-slate-700 object-contain"
+                                />
+                              ) : null}
                             </div>
                           );
                         })}
@@ -212,6 +350,8 @@ function QuestionsList({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[0, 1].map((i) => {
                           const opts = [...(q.options ?? []), ''].slice(0, 2);
+                          const optionImages = [...(q.optionImageUrls ?? []), null].slice(0, 2);
+                          const optionImageUrl = optionImages[i];
                           return (
                             <div key={i}>
                               <label className="text-xs text-slate-500 block mb-1">
@@ -228,6 +368,51 @@ function QuestionsList({
                                 placeholder={i === 0 ? 'Yes / True' : 'No / False'}
                                 className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2"
                               />
+                              <div className="mt-2 flex items-center gap-2">
+                                <label className="inline-flex items-center gap-1.5 rounded border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer w-fit">
+                                  <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp,image/gif"
+                                    className="hidden"
+                                    disabled={uploadingImageQuestionId === `${section.id}:${q.id}:option:${i}`}
+                                    onChange={(e) => {
+                                      const f = e.target.files?.[0];
+                                      if (f) {
+                                        onUploadOptionImage(section.id, q.id, i, f);
+                                        e.target.value = '';
+                                      }
+                                    }}
+                                  />
+                                  {uploadingImageQuestionId === `${section.id}:${q.id}:option:${i}` ? (
+                                    <Loader size="sm" />
+                                  ) : (
+                                    <ImagePlus className="h-3.5 w-3.5" />
+                                  )}
+                                  {uploadingImageQuestionId === `${section.id}:${q.id}:option:${i}` ? 'Uploading…' : 'Upload image'}
+                                </label>
+                                {optionImageUrl ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      optionImageUrl &&
+                                      onRemoveOptionImage(section.id, q.id, i, optionImageUrl)
+                                    }
+                                    disabled={
+                                      uploadingImageQuestionId === `${section.id}:${q.id}:option:${i}:remove`
+                                    }
+                                    className="text-xs text-slate-500 hover:text-red-600 dark:hover:text-red-400"
+                                  >
+                                    Remove image
+                                  </button>
+                                ) : null}
+                              </div>
+                              {optionImageUrl ? (
+                                <img
+                                  src={optionImageUrl}
+                                  alt=""
+                                  className="mt-2 max-h-20 rounded border border-slate-200 dark:border-slate-700 object-contain"
+                                />
+                              ) : null}
                             </div>
                           );
                         })}
@@ -352,7 +537,27 @@ type Variant = 'free' | 'paid';
 
 function normalizeSections(raw: unknown): Section[] {
   if (!Array.isArray(raw)) return [];
-  return raw.map((s: Section) => ({ ...s, enabled: s.enabled !== false }));
+  return raw.map((s: Section) => ({
+    ...s,
+    enabled: s.enabled !== false,
+    questions: (s.questions ?? []).map((q) => {
+      const imageUrls =
+        Array.isArray((q as unknown as { imageUrls?: unknown }).imageUrls)
+          ? ((q as unknown as { imageUrls?: unknown[] }).imageUrls ?? [])
+              .map((u) => String(u).trim())
+              .filter(Boolean)
+          : typeof (q as unknown as { image_url?: unknown }).image_url === 'string'
+            ? [String((q as unknown as { image_url?: unknown }).image_url).trim()].filter(Boolean)
+            : q.imageUrl && q.imageUrl.trim()
+              ? [q.imageUrl]
+              : [];
+      return {
+        ...q,
+        imageUrl: imageUrls[0] ?? null,
+        imageUrls,
+      };
+    }),
+  }));
 }
 
 export default function AdminQuestionsPage() {
@@ -363,8 +568,194 @@ export default function AdminQuestionsPage() {
   const [saving, setSaving] = useState(false);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
+  const [uploadingImageQuestionId, setUploadingImageQuestionId] = useState<string | null>(null);
   const dragRef = useRef<{ sectionId: string; index: number } | null>(null);
   const [dragOver, setDragOver] = useState<{ sectionId: string; index: number } | null>(null);
+
+  async function handleUploadQuestionImage(sectionId: string, questionId: string, files: File[]) {
+    const key = `${sectionId}:${questionId}`;
+    setUploadingImageQuestionId(key);
+    const uploadedUrls: string[] = [];
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.set('file', file);
+        const res = await fetch('/api/admin/upload-question-image', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error ?? 'Upload failed');
+        }
+        if (typeof data.url === 'string') {
+          uploadedUrls.push(data.url);
+        }
+      }
+      if (uploadedUrls.length > 0) {
+        setQuestionnaire((prev) =>
+          prev.map((s) => {
+            if (s.id !== sectionId) return s;
+            return {
+              ...s,
+              questions: s.questions.map((q) => {
+                if (q.id !== questionId) return q;
+                const existing =
+                  q.imageUrls && q.imageUrls.length > 0
+                    ? q.imageUrls
+                    : q.imageUrl && q.imageUrl.trim()
+                      ? [q.imageUrl]
+                      : [];
+                const imageUrls = [...existing, ...uploadedUrls];
+                return { ...q, imageUrl: imageUrls[0] ?? null, imageUrls };
+              }),
+            };
+          })
+        );
+        toast.success(uploadedUrls.length === 1 ? 'Image uploaded' : 'Images uploaded');
+      }
+    } catch (e) {
+      if (uploadedUrls.length > 0) {
+        await Promise.allSettled(uploadedUrls.map((url) => deleteImageFromS3(url)));
+      }
+      toast.error(e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploadingImageQuestionId(null);
+    }
+  }
+
+  async function handleUploadOptionImage(
+    sectionId: string,
+    questionId: string,
+    optionIndex: number,
+    file: File
+  ) {
+    const key = `${sectionId}:${questionId}:option:${optionIndex}`;
+    setUploadingImageQuestionId(key);
+    try {
+      const formData = new FormData();
+      formData.set('file', file);
+      const res = await fetch('/api/admin/upload-question-image', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error ?? 'Upload failed');
+        return;
+      }
+      if (typeof data.url === 'string') {
+        setQuestionnaire((prev) =>
+          prev.map((s) => {
+            if (s.id !== sectionId) return s;
+            return {
+              ...s,
+              questions: s.questions.map((q) => {
+                if (q.id !== questionId) return q;
+                const next = [...(q.optionImageUrls ?? []), null, null, null];
+                next[optionIndex] = data.url;
+                const maxLen = q.type === 'binary' ? 2 : q.type === 'mcq' ? 4 : next.length;
+                const nextOptions = [...(q.options ?? []), '', '', '', ''].slice(0, maxLen);
+                if (nextOptions[optionIndex] === undefined) nextOptions[optionIndex] = '';
+                return { ...q, options: nextOptions, optionImageUrls: next.slice(0, maxLen) };
+              }),
+            };
+          })
+        );
+        toast.success('Image uploaded');
+      }
+    } catch {
+      toast.error('Upload failed');
+    } finally {
+      setUploadingImageQuestionId(null);
+    }
+  }
+
+  async function deleteImageFromS3(url: string) {
+    const res = await fetch('/api/admin/upload-question-image', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error ?? 'Failed to delete image');
+    }
+  }
+
+  async function handleRemoveQuestionImage(
+    sectionId: string,
+    questionId: string,
+    imageUrl: string,
+    imageIndex: number
+  ) {
+    const key = `${sectionId}:${questionId}:remove:${imageIndex}`;
+    setUploadingImageQuestionId(key);
+    try {
+      await deleteImageFromS3(imageUrl);
+      setQuestionnaire((prev) =>
+        prev.map((s) => {
+          if (s.id !== sectionId) return s;
+          return {
+            ...s,
+            questions: s.questions.map((q) => {
+              if (q.id !== questionId) return q;
+              const existing =
+                q.imageUrls && q.imageUrls.length > 0
+                  ? [...q.imageUrls]
+                  : q.imageUrl && q.imageUrl.trim()
+                    ? [q.imageUrl]
+                    : [];
+              existing.splice(imageIndex, 1);
+              return {
+                ...q,
+                imageUrl: existing[0] ?? null,
+                imageUrls: existing,
+              };
+            }),
+          };
+        })
+      );
+      toast.success('Image removed');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to remove image');
+    } finally {
+      setUploadingImageQuestionId(null);
+    }
+  }
+
+  async function handleRemoveOptionImage(
+    sectionId: string,
+    questionId: string,
+    optionIndex: number,
+    imageUrl: string
+  ) {
+    const key = `${sectionId}:${questionId}:option:${optionIndex}:remove`;
+    setUploadingImageQuestionId(key);
+    try {
+      await deleteImageFromS3(imageUrl);
+      setQuestionnaire((prev) =>
+        prev.map((s) => {
+          if (s.id !== sectionId) return s;
+          return {
+            ...s,
+            questions: s.questions.map((q) => {
+              if (q.id !== questionId) return q;
+              const next = [...(q.optionImageUrls ?? []), null, null, null];
+              next[optionIndex] = null;
+              const maxLen = q.type === 'binary' ? 2 : q.type === 'mcq' ? 4 : next.length;
+              return { ...q, optionImageUrls: next.slice(0, maxLen) };
+            }),
+          };
+        })
+      );
+      toast.success('Image removed');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to remove image');
+    } finally {
+      setUploadingImageQuestionId(null);
+    }
+  }
 
   const questionnaire = variant === 'free' ? freeSections : paidSections;
   const setQuestionnaire = variant === 'free' ? setFreeSections : setPaidSections;
@@ -605,6 +996,11 @@ export default function AdminQuestionsPage() {
                   reorderQuestions={reorderQuestions}
                   addQuestion={addQuestion}
                   deleteQuestion={deleteQuestion}
+                  onUploadImage={handleUploadQuestionImage}
+                  onUploadOptionImage={handleUploadOptionImage}
+                  onRemoveImage={handleRemoveQuestionImage}
+                  onRemoveOptionImage={handleRemoveOptionImage}
+                  uploadingImageQuestionId={uploadingImageQuestionId}
                   dragRef={dragRef}
                   dragOver={dragOver}
                   setDragOver={setDragOver}

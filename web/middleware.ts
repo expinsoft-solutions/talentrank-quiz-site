@@ -25,9 +25,9 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
 
-  if (error || !user) {
+  if (!session?.user) {
     const url = new URL('/admin/login', request.url);
     url.searchParams.set('redirect', pathname);
     const redirectRes = NextResponse.redirect(url);

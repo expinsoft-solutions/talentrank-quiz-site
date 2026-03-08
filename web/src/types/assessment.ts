@@ -72,6 +72,9 @@ export interface DbQuestion {
   correctAnswer: string | null;
   active: boolean | null;
   options?: string[] | null;
+  imageUrl?: string | null;
+  imageUrls?: string[] | null;
+  optionImageUrls?: (string | null)[] | null;
 }
 
 export interface ResumeResponseRow {

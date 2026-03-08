@@ -25,6 +25,10 @@ export interface QuestionnaireQuestion {
   correct_answer?: string | null;
   active?: boolean;
   options?: string[];
+  imageUrls?: string[];
+  image_urls?: string[];
+  optionImageUrls?: (string | null)[];
+  option_image_urls?: (string | null)[];
 }
 
 export interface DbSection {
@@ -47,6 +51,9 @@ export interface DbQuestion {
   correctAnswer: string | null;
   active: boolean | null;
   options: string[] | null;
+  imageUrl?: string | null;
+  imageUrls?: string[] | null;
+  optionImageUrls?: (string | null)[] | null;
 }
 
 export type QuestionnaireVariant = 'free' | 'paid';
@@ -75,7 +82,23 @@ function parseSectionsArray(arr: unknown): { sections: DbSection[]; questions: D
       const qType = typeof q.type === 'string' ? q.type : 'likert';
       const optionsVal =
         qType !== 'likert' && Array.isArray(q.options)
-          ? (q.options as unknown[]).map((o) => String(o)).filter(Boolean)
+          ? (q.options as unknown[]).map((o) => (o == null ? '' : String(o)))
+          : null;
+      const imageUrlVal = q.imageUrl ?? q.image_url;
+      const imageUrl = typeof imageUrlVal === 'string' && imageUrlVal.trim() ? imageUrlVal.trim() : null;
+      const imageUrlsVal = q.imageUrls ?? q.image_urls;
+      const imageUrls =
+        Array.isArray(imageUrlsVal)
+          ? (imageUrlsVal as unknown[]).map((u) => String(u).trim()).filter(Boolean)
+          : imageUrl
+            ? [imageUrl]
+            : null;
+      const optionImageUrlsVal = q.optionImageUrls ?? q.option_image_urls;
+      const optionImageUrls =
+        Array.isArray(optionImageUrlsVal)
+          ? (optionImageUrlsVal as unknown[]).map((u) =>
+              typeof u === 'string' && u.trim() ? u.trim() : null
+            )
           : null;
       questions.push({
         id: typeof q.id === 'string' ? q.id : String(q.id),
@@ -88,6 +111,9 @@ function parseSectionsArray(arr: unknown): { sections: DbSection[]; questions: D
         correctAnswer: typeof q.correct_answer === 'string' ? q.correct_answer : null,
         active,
         options: optionsVal,
+        imageUrl,
+        imageUrls,
+        optionImageUrls,
       });
     }
   }

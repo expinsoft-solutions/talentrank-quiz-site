@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SectionQuestion } from '@/lib/assessment';
@@ -58,11 +57,43 @@ export function QuestionByType({
 }: QuestionByTypeProps) {
   const [hoveredScale, setHoveredScale] = useState<number | null>(null);
 
+  const questionImages = (
+    question.imageUrls?.filter((u) => typeof u === 'string' && u.trim()) ??
+    (question.imageUrl && question.imageUrl.trim() ? [question.imageUrl] : [])
+  ) as string[];
+  const questionImage = questionImages.length > 0 ? (
+    <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {questionImages.map((u, i) => (
+        <figure key={`${u}-${i}`} className="rounded-lg overflow-hidden max-h-[280px] bg-muted/50">
+          <img
+            src={u}
+            alt=""
+            className="w-full object-contain max-h-[280px]"
+          />
+        </figure>
+      ))}
+    </div>
+  ) : null;
+
+  const renderOptionContent = (label: string, imageUrl: string | null | undefined, fallback: string) => (
+    <div className="flex items-center gap-4">
+      {imageUrl && imageUrl.trim() ? (
+        <img
+          src={imageUrl}
+          alt=""
+          className="h-20 w-20 rounded-lg border border-border object-contain bg-muted/40 shrink-0"
+        />
+      ) : null}
+      <span className="text-base sm:text-lg font-medium">{label && label.trim() ? label : fallback}</span>
+    </div>
+  );
+
   if (question.type === 'text') {
     const textVal = typeof value === 'string' ? value : '';
     const suggestions = (question.options ?? []).filter(Boolean);
     return (
       <label className="block">
+        {questionImage}
         <p className="text-base sm:text-lg font-medium text-foreground mb-3 text-left leading-relaxed">
           {question.question}
         </p>
@@ -117,6 +148,7 @@ export function QuestionByType({
       <TooltipProvider delayDuration={100} skipDelayDuration={0}>
         <Card className="w-full max-w-full rounded-2xl border-indigo-200/70 dark:border-indigo-800/50 bg-white dark:bg-card shadow-xl overflow-hidden border-t-4 border-t-indigo-400 dark:border-t-indigo-500">
           <CardContent className="p-10 sm:p-14 space-y-12">
+            {questionImage}
             <p className="text-2xl sm:text-3xl font-semibold text-foreground text-left leading-relaxed">
               {question.question}
             </p>
@@ -165,76 +197,91 @@ export function QuestionByType({
     );
   }
 
-  if (question.type === 'mcq' && question.options && question.options.length > 0) {
+  if (
+    question.type === 'mcq' &&
+    ((question.options && question.options.length > 0) ||
+      (question.optionImageUrls && question.optionImageUrls.length > 0))
+  ) {
     const numVal = typeof value === 'number' ? value : undefined;
-    const isOther = typeof value === 'string';
-    const otherVal = isOther ? value : '';
+    const optionCount = Math.min(
+      4,
+      Math.max(question.options?.length ?? 0, question.optionImageUrls?.length ?? 0)
+    );
+    const mcqOptions = Array.from({ length: optionCount }, (_, i) => question.options?.[i] ?? '');
     return (
       <Card className="w-full max-w-full rounded-2xl border-indigo-200/70 dark:border-indigo-800/50 bg-white dark:bg-card shadow-xl overflow-hidden border-t-4 border-t-indigo-400 dark:border-t-indigo-500">
-        <CardContent className="p-10 sm:p-14 space-y-8">
-          <p className="text-2xl sm:text-3xl font-semibold text-foreground text-left leading-relaxed">
-            {question.question}
-          </p>
-          <div className="flex flex-col gap-3">
-            {question.options.map((opt, i) => {
-              const v = i + 1;
-              const selected = numVal === v;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => onChange(v)}
-                  className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${
-                    selected
-                      ? 'border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20'
-                      : 'border-border hover:border-indigo-300 dark:hover:border-indigo-700'
-                  }`}
-                >
-                  {opt}
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() => onChange('')}
-              className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${
-                isOther
-                  ? 'border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20'
-                  : 'border-border hover:border-indigo-300 dark:hover:border-indigo-700'
-              }`}
-            >
-              Other
-            </button>
-            {isOther && (
-              <Input
-                type="text"
-                value={otherVal}
-                onChange={(e) => onChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    onEnter?.();
-                  }
-                }}
-                placeholder="Type your answer..."
-                className="rounded-xl border-2 border-indigo-300 dark:border-indigo-700 bg-background"
-                autoFocus
-              />
-            )}
+        <CardContent className="p-4 sm:p-6 lg:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-8 items-start min-w-0">
+            <div className="min-w-0 space-y-4">
+              {questionImage}
+              <p className="text-xl sm:text-2xl lg:text-3xl font-semibold text-foreground text-left leading-relaxed">
+                {question.question}
+              </p>
+            </div>
+            <div className="min-w-0 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                {mcqOptions.map((opt, i) => {
+                  const v = i + 1;
+                  const selected = numVal === v;
+                  const optionImageUrl = question.optionImageUrls?.[i] ?? null;
+                  const letter = String.fromCharCode(65 + i);
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => onChange(v)}
+                      className={`w-full text-left rounded-xl border-2 transition-colors overflow-hidden ${
+                        selected
+                          ? 'border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20'
+                          : 'border-border hover:border-indigo-300 dark:hover:border-indigo-700'
+                      }`}
+                    >
+                      <div className="min-h-[170px] sm:min-h-[190px] flex flex-col">
+                        <div className="flex-1 flex items-center justify-center p-3 sm:p-4 bg-background">
+                          {optionImageUrl && optionImageUrl.trim() ? (
+                            <img
+                              src={optionImageUrl}
+                              alt=""
+                              className="w-full max-h-[130px] sm:max-h-[150px] object-contain"
+                            />
+                          ) : (
+                            <span className="text-sm sm:text-base font-medium text-center">
+                              {opt && opt.trim() ? opt : letter}
+                            </span>
+                          )}
+                        </div>
+                        <div className="border-t border-border/70 px-3 py-2.5 flex items-center gap-2.5">
+                          <span
+                            className={`h-6 w-6 rounded-full border-2 flex items-center justify-center ${
+                              selected ? 'border-indigo-600' : 'border-indigo-500/80'
+                            }`}
+                          >
+                            {selected ? <span className="h-2 w-2 rounded-full bg-indigo-600" /> : null}
+                          </span>
+                          <span className="text-lg font-medium leading-none">{letter}</span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (question.type === 'binary' && question.options && question.options.length >= 2) {
+  if (
+    question.type === 'binary' &&
+    Math.max(question.options?.length ?? 0, question.optionImageUrls?.length ?? 0) >= 2
+  ) {
     const numVal = typeof value === 'number' ? value : undefined;
-    const opts = question.options.slice(0, 2);
-    const isOther = typeof value === 'string';
-    const otherVal = isOther ? value : '';
+    const opts = Array.from({ length: 2 }, (_, i) => question.options?.[i] ?? '');
     return (
       <Card className="w-full max-w-full rounded-2xl border-indigo-200/70 dark:border-indigo-800/50 bg-white dark:bg-card shadow-xl overflow-hidden border-t-4 border-t-indigo-400 dark:border-t-indigo-500">
         <CardContent className="p-10 sm:p-14 space-y-8">
+          {questionImage}
           <p className="text-2xl sm:text-3xl font-semibold text-foreground text-left leading-relaxed">
             {question.question}
           </p>
@@ -242,6 +289,7 @@ export function QuestionByType({
             {opts.map((opt, i) => {
               const v = i + 1;
               const selected = numVal === v;
+              const optionImageUrl = question.optionImageUrls?.[i] ?? null;
               return (
                 <button
                   key={i}
@@ -253,38 +301,11 @@ export function QuestionByType({
                       : 'border-border hover:border-indigo-300 dark:hover:border-indigo-700'
                   }`}
                 >
-                  {opt}
+                  {renderOptionContent(opt, optionImageUrl, `Option ${v}`)}
                 </button>
               );
             })}
-            <button
-              type="button"
-              onClick={() => onChange('')}
-              className={`flex-1 min-w-[140px] px-6 py-4 rounded-xl border-2 transition-colors font-medium ${
-                isOther
-                  ? 'border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20'
-                  : 'border-border hover:border-indigo-300 dark:hover:border-indigo-700'
-              }`}
-            >
-              Other
-            </button>
           </div>
-          {isOther && (
-            <Input
-              type="text"
-              value={otherVal}
-              onChange={(e) => onChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  onEnter?.();
-                }
-              }}
-              placeholder="Type your answer..."
-              className="rounded-xl border-2 border-indigo-300 dark:border-indigo-700 bg-background"
-              autoFocus
-            />
-          )}
         </CardContent>
       </Card>
     );
@@ -293,6 +314,7 @@ export function QuestionByType({
   return (
     <Card className="w-full max-w-full rounded-2xl border-indigo-200/70 dark:border-indigo-800/50 bg-white dark:bg-card shadow-xl overflow-hidden border-t-4 border-t-indigo-400 dark:border-t-indigo-500">
       <CardContent className="p-10 sm:p-14">
+        {questionImage}
         <p className="text-2xl sm:text-3xl font-semibold text-foreground text-left leading-relaxed">
           {question.question}
         </p>

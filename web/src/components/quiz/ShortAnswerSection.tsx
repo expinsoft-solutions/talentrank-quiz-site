@@ -20,6 +20,8 @@ function formatTime(seconds: number): string {
 interface ShortAnswerQuestion {
   id: string;
   question: string;
+  imageUrl?: string | null;
+  imageUrls?: string[];
 }
 
 interface ShortAnswerSectionProps {
@@ -200,6 +202,25 @@ export function ShortAnswerSection({
       <div className="flex-1 px-0 py-6 sm:py-8 flex flex-col justify-center">
         {currentQuestion && (
           <label className="block">
+            {(
+              currentQuestion.imageUrls?.filter((u) => typeof u === 'string' && u.trim()) ??
+              (currentQuestion.imageUrl && currentQuestion.imageUrl.trim() ? [currentQuestion.imageUrl] : [])
+            ).length > 0 ? (
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(
+                  currentQuestion.imageUrls?.filter((u) => typeof u === 'string' && u.trim()) ??
+                  (currentQuestion.imageUrl && currentQuestion.imageUrl.trim() ? [currentQuestion.imageUrl] : [])
+                ).map((u, i) => (
+                  <figure key={`${u}-${i}`} className="rounded-lg overflow-hidden max-h-[280px] bg-muted/50">
+                    <img
+                      src={u}
+                      alt=""
+                      className="w-full object-contain max-h-[280px]"
+                    />
+                  </figure>
+                ))}
+              </div>
+            ) : null}
             <p className="text-base sm:text-lg font-medium text-foreground mb-3 text-left leading-relaxed">
               {currentQuestion.question}
             </p>

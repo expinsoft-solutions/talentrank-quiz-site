@@ -265,6 +265,25 @@ export function LikertSection({
               }`}
             >
               <CardContent className="p-10 sm:p-14 space-y-12">
+                {(
+                  currentQuestion.imageUrls?.filter((u) => typeof u === 'string' && u.trim()) ??
+                  (currentQuestion.imageUrl && currentQuestion.imageUrl.trim() ? [currentQuestion.imageUrl] : [])
+                ).length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {(
+                      currentQuestion.imageUrls?.filter((u) => typeof u === 'string' && u.trim()) ??
+                      (currentQuestion.imageUrl && currentQuestion.imageUrl.trim() ? [currentQuestion.imageUrl] : [])
+                    ).map((u, i) => (
+                      <figure key={`${u}-${i}`} className="rounded-lg overflow-hidden max-h-[280px] bg-muted/50">
+                        <img
+                          src={u}
+                          alt=""
+                          className="w-full object-contain max-h-[280px]"
+                        />
+                      </figure>
+                    ))}
+                  </div>
+                ) : null}
                 <div className="w-full">
                   <p className="text-2xl sm:text-3xl font-semibold text-foreground text-left leading-relaxed">
                     {currentQuestion.question}
